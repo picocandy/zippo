@@ -34,8 +34,9 @@ func (s *ZipSuite) TestZipBuilder_failure(c *check.C) {
 		},
 	}
 
-	err := ZipBuilder(ps)
+	f, err := ZipBuilder(ps)
 	c.Assert(err, check.NotNil)
+	c.Assert(f, check.Equals, "")
 }
 
 func (s *ZipSuite) TestZipBuilder(c *check.C) {
@@ -52,6 +53,7 @@ func (s *ZipSuite) TestZipBuilder(c *check.C) {
 		},
 	}
 
-	err := ZipBuilder(ps)
+	f, err := ZipBuilder(ps)
 	c.Assert(err, check.IsNil)
+	c.Assert(f, check.Not(check.Equals), "")
 }

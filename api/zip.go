@@ -9,13 +9,11 @@ import (
 	"os"
 )
 
-func ZipBuilder(ps []Payload) error {
-	var err error
-
+func ZipBuilder(ps []Payload) (string, error) {
 	h := zipHash(ps)
 	out, err := ioutil.TempFile("", h)
 	if err != nil {
-		return err
+		return "", err
 	}
 
 	defer out.Close()
@@ -27,32 +25,34 @@ func ZipBuilder(ps []Payload) error {
 
 		t, _ := DownloadTmp(p)
 		if err != nil {
-			return err
+			return "", err
 		}
 
 		f, err := z.Create(p.Filename)
 		if err != nil {
-			return err
+			return "", err
 		}
 
 		ot, err := os.Open(t)
 		if err != nil {
-			return err
+			return "", err
 		}
 
 		_, err = io.Copy(f, ot)
 		if err != nil {
-			return err
+			return "", err
 		}
 
-		ot.Close()
+		if err = ot.Close(); err == nil {
+			os.Remove(t)
+		}
 	}
 
 	if err = z.Close(); err != nil {
-		return err
+		return "", err
 	}
 
-	return nil
+	return out.Name(), nil
 }
 
 func zipHash(ps []Payload) string {
