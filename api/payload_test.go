@@ -58,6 +58,23 @@ func (s *PayloadSuite) TestPayload_Download(c *check.C) {
 	c.Assert(p.TempFile, check.Not(check.Equals), "")
 }
 
+func (s *PayloadSuite) TestPayload_WriteZip_failure(c *check.C) {
+	p := &Payload{Filename: "awesome-logo.png"}
+
+	buf := new(bytes.Buffer)
+	z := zip.NewWriter(buf)
+
+	err := p.WriteZip(z)
+	c.Assert(err, check.NotNil)
+
+	err = z.Close()
+	if err != nil {
+		panic(err)
+	}
+
+	c.Assert(buf.Len(), check.Equals, 22) // empty zip
+}
+
 func (s *PayloadSuite) TestPayload_WriteZip(c *check.C) {
 	p := &Payload{
 		Filename: "awesome-logo.png",
