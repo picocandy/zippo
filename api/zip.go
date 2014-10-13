@@ -9,7 +9,7 @@ import (
 	"os"
 )
 
-func ZipBuilder(ps []Payload) (string, error) {
+func ZipBuilder(ps []*Payload) (string, error) {
 	h := zipHash(ps)
 	out, err := ioutil.TempFile("", h)
 	if err != nil {
@@ -23,7 +23,7 @@ func ZipBuilder(ps []Payload) (string, error) {
 	for i := range ps {
 		p := ps[i]
 
-		t, _ := DownloadTmp(p)
+		err := DownloadTmp(p)
 		if err != nil {
 			return "", err
 		}
@@ -33,7 +33,7 @@ func ZipBuilder(ps []Payload) (string, error) {
 			return "", err
 		}
 
-		ot, err := os.Open(t)
+		ot, err := os.Open(p.TempFile)
 		if err != nil {
 			return "", err
 		}
@@ -44,7 +44,7 @@ func ZipBuilder(ps []Payload) (string, error) {
 		}
 
 		if err = ot.Close(); err == nil {
-			os.Remove(t)
+			p.RemoveTemp()
 		}
 	}
 
@@ -55,7 +55,7 @@ func ZipBuilder(ps []Payload) (string, error) {
 	return out.Name(), nil
 }
 
-func zipHash(ps []Payload) string {
+func zipHash(ps []*Payload) string {
 	h := sha1.New()
 
 	for i := range ps {

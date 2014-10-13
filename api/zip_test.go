@@ -21,13 +21,13 @@ func (s *ZipSuite) TearDownSuite(c *check.C) {
 }
 
 func (s *ZipSuite) TestZipBuilder_failure(c *check.C) {
-	ps := []Payload{
-		Payload{
+	ps := []*Payload{
+		&Payload{
 			Filename:    "logo.png",
 			URL:         s.suite.server.URL + "/logo.png",
 			ContentType: "image/png",
 		},
-		Payload{
+		&Payload{
 			Filename:    "blocked.png",
 			URL:         s.suite.server.URL + "/blocked.png",
 			ContentType: "image/png",
@@ -40,13 +40,13 @@ func (s *ZipSuite) TestZipBuilder_failure(c *check.C) {
 }
 
 func (s *ZipSuite) TestZipBuilder(c *check.C) {
-	ps := []Payload{
-		Payload{
+	ps := []*Payload{
+		&Payload{
 			Filename:    "logo.png",
 			URL:         s.suite.server.URL + "/logo.png",
 			ContentType: "image/png",
 		},
-		Payload{
+		&Payload{
 			Filename:    "image.png",
 			URL:         s.suite.server.URL + "/image.png",
 			ContentType: "image/png",

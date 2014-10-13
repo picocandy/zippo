@@ -21,25 +21,25 @@ func (s *DownloadSuite) TearDownSuite(c *check.C) {
 }
 
 func (s *DownloadSuite) TestDownloadTemp_failure(c *check.C) {
-	p := Payload{
+	p := &Payload{
 		Filename:    "unknown.png",
 		URL:         s.suite.server.URL + "/unknown.png",
 		ContentType: "image/png",
 	}
 
-	f, err := DownloadTmp(p)
+	err := DownloadTmp(p)
 	c.Assert(err, check.NotNil)
-	c.Assert(f, check.Equals, "")
+	c.Assert(p.TempFile, check.Equals, "")
 }
 
 func (s *DownloadSuite) TestDownloadTemp(c *check.C) {
-	p := Payload{
+	p := &Payload{
 		Filename:    "logo.png",
 		URL:         s.suite.server.URL + "/logo.png",
 		ContentType: "image/png",
 	}
 
-	f, err := DownloadTmp(p)
+	err := DownloadTmp(p)
 	c.Assert(err, check.IsNil)
-	c.Assert(f, check.Not(check.Equals), "")
+	c.Assert(p.TempFile, check.Not(check.Equals), "")
 }
