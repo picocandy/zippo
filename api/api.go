@@ -6,9 +6,13 @@ type Payload struct {
 	ContentType string `json:"content_type"`
 }
 
+func (p Payload) String() string {
+	return p.Filename + "::" + p.URL
+}
+
 type Response struct {
 	Zipname     string    `json:"zipname"`
-	Payloads    []Payload `json:"urls"`
+	Payloads    []Payload `json:"payloads"`
 	Length      int       `json:"length"`
 	ContentType string    `json:"content_type"`
 }
