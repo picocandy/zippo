@@ -35,6 +35,18 @@ func (s *DownloadSuite) TearDownSuite(c *check.C) {
 	s.server.Close()
 }
 
+func (s *DownloadSuite) TestDownloadTemp_failure(c *check.C) {
+	p := Payload{
+		Filename:    "unknown.png",
+		URL:         s.server.URL + "/unknown.png",
+		ContentType: "image/png",
+	}
+
+	f, err := DownloadTmp(p)
+	c.Assert(err, check.NotNil)
+	c.Assert(f, check.Equals, "")
+}
+
 func (s *DownloadSuite) TestDownloadTemp(c *check.C) {
 	p := Payload{
 		Filename:    "logo.png",
