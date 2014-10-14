@@ -4,23 +4,44 @@ import (
 	"archive/zip"
 	"bytes"
 	"gopkg.in/check.v1"
+	"io"
+	"net/http"
+	"net/http/httptest"
 	"os"
 )
 
 type PayloadSuite struct {
-	suite *BaseSuite
+	server *httptest.Server
 }
 
 func init() {
-	check.Suite(&PayloadSuite{suite: &BaseSuite{}})
+	check.Suite(&PayloadSuite{})
 }
 
 func (s *PayloadSuite) SetUpSuite(c *check.C) {
-	s.suite.SetUpSuite(c)
+	h := func(w http.ResponseWriter, r *http.Request) {
+		f, err := os.Open("fixtures/logo.png")
+		if err != nil {
+			panic(err)
+		}
+
+		defer f.Close()
+		io.Copy(w, f)
+	}
+
+	n := func(w http.ResponseWriter, r *http.Request) {
+		http.Error(w, "unauthorized!", http.StatusForbidden)
+	}
+
+	m := http.NewServeMux()
+	m.HandleFunc("/logo.png", h)
+	m.HandleFunc("/image.png", h)
+	m.HandleFunc("/blocked.png", n)
+	s.server = httptest.NewServer(m)
 }
 
 func (s *PayloadSuite) TearDownSuite(c *check.C) {
-	s.suite.TearDownSuite(c)
+	s.server.Close()
 }
 
 func (s *PayloadSuite) TestPayload_String(c *check.C) {
@@ -36,7 +57,7 @@ func (s *PayloadSuite) TestPayload_String(c *check.C) {
 func (s *PayloadSuite) TestPayload_Download_failure(c *check.C) {
 	p := &Payload{
 		Filename:    "unknown.png",
-		URL:         s.suite.server.URL + "/unknown.png",
+		URL:         s.server.URL + "/unknown.png",
 		ContentType: "image/png",
 	}
 
@@ -48,7 +69,7 @@ func (s *PayloadSuite) TestPayload_Download_failure(c *check.C) {
 func (s *PayloadSuite) TestPayload_Download(c *check.C) {
 	p := &Payload{
 		Filename:    "logo.png",
-		URL:         s.suite.server.URL + "/logo.png",
+		URL:         s.server.URL + "/logo.png",
 		ContentType: "image/png",
 	}
 
