@@ -5,6 +5,7 @@ import (
 	"crypto/sha1"
 	"errors"
 	"fmt"
+	"github.com/ncw/swift"
 	"io"
 	"io/ioutil"
 	"os"
@@ -64,6 +65,31 @@ func (a *Archive) Build() error {
 
 	a.TempFile = out.Name()
 	return nil
+}
+
+func (a *Archive) Upload(cf swift.Connection, cn string) (ob swift.Object, err error) {
+	err = cf.Authenticate()
+	if err != nil {
+		return
+	}
+
+	f, err := os.Open(a.TempFile)
+	if err != nil {
+		return
+	}
+	defer f.Close()
+
+	_, err = cf.ObjectPut(cn, a.String(), f, true, "", "application/zip", swift.Headers{})
+	if err != nil {
+		return
+	}
+
+	ob, _, err = cf.Object(cn, a.String())
+	if err != nil {
+		return
+	}
+
+	return ob, nil
 }
 
 func (a *Archive) RemoveTemp() error {

@@ -3,7 +3,9 @@ package zippo
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/ncw/swift"
 	"net/http"
+	"os"
 )
 
 func HomeHandler(w http.ResponseWriter, r *http.Request) {
@@ -15,7 +17,7 @@ func HomeHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprint(w, "Zippo!")
 }
 
-func ZipHandler(w http.ResponseWriter, r *http.Request) {
+func ZipHandler(w http.ResponseWriter, r *http.Request, cf swift.Connection) {
 	if r.Method != "POST" {
 		w.WriteHeader(http.StatusMethodNotAllowed)
 		return
@@ -36,5 +38,11 @@ func ZipHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	fmt.Fprint(w, a.TempFile)
+	ob, err := a.Upload(cf, os.Getenv("SWIFT_CONTAINER"))
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	fmt.Fprint(w, ob)
 }
