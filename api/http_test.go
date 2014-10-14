@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 )
 
 type HTTPSuite struct {
@@ -39,7 +40,7 @@ func (s *HTTPSuite) TestHomeHandler(c *check.C) {
 }
 
 func (s *HTTPSuite) TestZipHandler(c *check.C) {
-	req, err := http.NewRequest("POST", s.server.URL+"/z", nil)
+	req, err := http.NewRequest("POST", s.server.URL+"/z", strings.NewReader(fixtures["archive"]))
 	c.Assert(err, check.IsNil)
 	req.Header.Add("Content-Type", "application/json")
 
@@ -54,5 +55,5 @@ func (s *HTTPSuite) TestZipHandler(c *check.C) {
 
 	b, err := ioutil.ReadAll(resp.Body)
 	c.Assert(err, check.IsNil)
-	c.Assert(string(b), check.Equals, "Zippo!")
+	c.Assert(string(b), check.Matches, "(.)*zippo-archive.zip(.)*")
 }

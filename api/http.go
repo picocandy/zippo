@@ -1,6 +1,7 @@
 package zippo
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
 )
@@ -20,5 +21,20 @@ func ZipHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	fmt.Fprint(w, "Zippo!")
+	a := &Archive{}
+
+	dec := json.NewDecoder(r.Body)
+	err := dec.Decode(a)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	err = a.Build()
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	fmt.Fprint(w, a.TempFile)
 }

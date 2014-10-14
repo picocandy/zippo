@@ -40,3 +40,40 @@ func (s *BaseSuite) SetUpSuite(c *check.C) {
 func (s *BaseSuite) TearDownSuite(c *check.C) {
 	s.server.Close()
 }
+
+var fixtures = map[string]string{
+	"archive": `
+	{
+		"filename": "zippo-archive.zip",
+		"payloads": [
+			{
+				"url": "http://picocandy.com/images/logo.png",
+				"filename": "picocandy.png",
+				"content_type": "image/png"
+			},
+			{
+				"url": "http://www.gorillatoolkit.org/static/images/gorilla-icon-64.png",
+				"filename": "gorilla.png",
+				"content_type": "image/png"
+			}
+		]
+	}
+	`,
+	"archive-without-filename": `
+	{
+		"filename": "",
+		"payloads": [
+			{
+				"url": "http://picocandy.com/images/logo.png",
+				"filename": "picocandy.png",
+				"content_type": "image/png"
+			},
+			{
+				"url": "http://www.gorillatoolkit.org/static/images/gorilla-icon-64.png",
+				"filename": "gorilla.png",
+				"content_type": "image/png"
+			}
+		]
+	}
+	`,
+}
