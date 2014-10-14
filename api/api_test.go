@@ -3,6 +3,7 @@ package zippo
 import (
 	"gopkg.in/check.v1"
 	"io"
+	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -39,6 +40,26 @@ func (s *BaseSuite) SetUpSuite(c *check.C) {
 
 func (s *BaseSuite) TearDownSuite(c *check.C) {
 	s.server.Close()
+}
+
+func prepareTemp(prefix string) string {
+	tmp, err := ioutil.TempFile("", prefix)
+	if err != nil {
+		panic(err)
+	}
+	defer tmp.Close()
+
+	b, err := ioutil.ReadFile("fixtures/logo.png")
+	if err != nil {
+		panic(err)
+	}
+
+	_, err = tmp.Write(b)
+	if err != nil {
+		panic(err)
+	}
+
+	return tmp.Name()
 }
 
 var fixtures = map[string]string{

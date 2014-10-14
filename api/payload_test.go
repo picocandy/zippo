@@ -4,7 +4,6 @@ import (
 	"archive/zip"
 	"bytes"
 	"gopkg.in/check.v1"
-	"io/ioutil"
 	"os"
 )
 
@@ -78,7 +77,7 @@ func (s *PayloadSuite) TestPayload_WriteZip_failure(c *check.C) {
 func (s *PayloadSuite) TestPayload_WriteZip(c *check.C) {
 	p := &Payload{
 		Filename: "awesome-logo.png",
-		TempFile: s.prepareTemp(),
+		TempFile: prepareTemp("zippo-payload-suite-"),
 	}
 
 	buf := new(bytes.Buffer)
@@ -111,7 +110,7 @@ func (s *PayloadSuite) TestPayload_RemoveTemp_failure(c *check.C) {
 }
 
 func (s *PayloadSuite) TestPayload_RemoveTemp(c *check.C) {
-	t := s.prepareTemp()
+	t := prepareTemp("zippo-payload-suite-")
 	p := &Payload{TempFile: t}
 
 	err := p.RemoveTemp()
@@ -121,24 +120,4 @@ func (s *PayloadSuite) TestPayload_RemoveTemp(c *check.C) {
 	_, err = os.Stat(t)
 	c.Assert(err, check.NotNil)
 	c.Assert(os.IsNotExist(err), check.Equals, true)
-}
-
-func (s *PayloadSuite) prepareTemp() string {
-	tmp, err := ioutil.TempFile("", "zippo-payload-suite-")
-	if err != nil {
-		panic(err)
-	}
-	defer tmp.Close()
-
-	b, err := ioutil.ReadFile("fixtures/logo.png")
-	if err != nil {
-		panic(err)
-	}
-
-	_, err = tmp.Write(b)
-	if err != nil {
-		panic(err)
-	}
-
-	return tmp.Name()
 }

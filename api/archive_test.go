@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"gopkg.in/check.v1"
 	"net/http/httptest"
+	"os"
 )
 
 type ArchiveSuite struct {
@@ -14,7 +15,7 @@ func init() {
 	check.Suite(&ArchiveSuite{})
 }
 
-func (s *ArchiveSuite) TestString_withoutFilename(c *check.C) {
+func (s *ArchiveSuite) TestArchive_String_withoutFilename(c *check.C) {
 	a := &Archive{}
 
 	err := json.Unmarshal([]byte(fixtures["archive-without-filename"]), a)
@@ -22,10 +23,29 @@ func (s *ArchiveSuite) TestString_withoutFilename(c *check.C) {
 	c.Assert(a.String(), check.Equals, "24c6e8fcb0a625d23d2aff43ec487a90167d56bb.zip")
 }
 
-func (s *ArchiveSuite) TestString(c *check.C) {
+func (s *ArchiveSuite) TestArchive_String(c *check.C) {
 	a := &Archive{}
 
 	err := json.Unmarshal([]byte(fixtures["archive"]), a)
 	c.Assert(err, check.IsNil)
 	c.Assert(a.String(), check.Equals, "zippo-archive.zip")
+}
+
+func (s *ArchiveSuite) TestArchive_RemoveTemp_failure(c *check.C) {
+	a := &Archive{}
+	err := a.RemoveTemp()
+	c.Assert(err, check.NotNil)
+}
+
+func (s *ArchiveSuite) TestArchive_RemoveTemp(c *check.C) {
+	t := prepareTemp("zippo-archive-suite-")
+	a := &Archive{TempFile: t}
+
+	err := a.RemoveTemp()
+	c.Assert(err, check.IsNil)
+	c.Assert(a.TempFile, check.Equals, "")
+
+	_, err = os.Stat(t)
+	c.Assert(err, check.NotNil)
+	c.Assert(os.IsNotExist(err), check.Equals, true)
 }
