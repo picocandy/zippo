@@ -1,6 +1,7 @@
 package zippo
 
 import (
+	"github.com/ncw/swift"
 	"gopkg.in/check.v1"
 	"io/ioutil"
 	"net/http"
@@ -19,7 +20,10 @@ func init() {
 func (s *HTTPSuite) SetUpSuite(c *check.C) {
 	m := http.NewServeMux()
 	m.HandleFunc("/", HomeHandler)
-	m.HandleFunc("/z", ZipHandler)
+	m.HandleFunc("/z", func(w http.ResponseWriter, r *http.Request) {
+		ZipHandler(w, r, swift.Connection{})
+	})
+
 	s.server = httptest.NewServer(m)
 }
 
@@ -40,6 +44,10 @@ func (s *HTTPSuite) TestHomeHandler(c *check.C) {
 }
 
 func (s *HTTPSuite) TestZipHandler(c *check.C) {
+	if !*live {
+		c.Skip("-live is not provided")
+	}
+
 	req, err := http.NewRequest("POST", s.server.URL+"/z", strings.NewReader(fixtures["archive"]))
 	c.Assert(err, check.IsNil)
 	req.Header.Add("Content-Type", "application/json")

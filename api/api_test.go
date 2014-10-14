@@ -1,10 +1,13 @@
 package zippo
 
 import (
+	"flag"
 	"gopkg.in/check.v1"
 	"io/ioutil"
 	"testing"
 )
+
+var live = flag.Bool("live", false, "Include live tests")
 
 func Test(t *testing.T) { check.TestingT(t) }
 
