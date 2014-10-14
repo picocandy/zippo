@@ -63,4 +63,21 @@ var fixtures = map[string]string{
 		]
 	}
 	`,
+	"archive-failure": `
+	{
+		"filename": "zippo-failure.zip",
+		"payloads": [
+			{
+				"url": "http://picocandy.com/images/unknown.png",
+				"filename": "picocandy.png",
+				"content_type": "image/png"
+			},
+			{
+				"url": "http://www.gorillatoolkit.org/static/images/gorilla-icon-64.png",
+				"filename": "gorilla.png",
+				"content_type": "image/png"
+			}
+		]
+	}
+	`,
 }

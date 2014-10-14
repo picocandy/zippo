@@ -115,7 +115,7 @@ func (s *PayloadSuite) TestPayload_WriteZip(c *check.C) {
 	// check zip integrity
 	br := bytes.NewReader(buf.Bytes())
 
-	c.Assert(br.Len(), check.Not(check.Equals), 22)
+	c.Assert(br.Len(), check.Not(check.Equals), 22) // empty zip
 
 	oz, err := zip.NewReader(br, int64(br.Len()))
 	c.Assert(err, check.IsNil)

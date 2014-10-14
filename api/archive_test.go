@@ -31,6 +31,32 @@ func (s *ArchiveSuite) TestArchive_String(c *check.C) {
 	c.Assert(a.String(), check.Equals, "zippo-archive.zip")
 }
 
+func (s *ArchiveSuite) TestArchive_Build_failure(c *check.C) {
+	a := &Archive{}
+
+	err := json.Unmarshal([]byte(fixtures["archive-failure"]), a)
+	c.Assert(err, check.IsNil)
+
+	err = a.Build()
+	c.Assert(err, check.NotNil)
+	c.Assert(a.TempFile, check.Equals, "")
+}
+
+func (s *ArchiveSuite) TestArchive_Build(c *check.C) {
+	a := &Archive{}
+
+	err := json.Unmarshal([]byte(fixtures["archive"]), a)
+	c.Assert(err, check.IsNil)
+
+	err = a.Build()
+	c.Assert(err, check.IsNil)
+	c.Assert(a.TempFile, check.Matches, "(.)*zippo-archive.zip(.)*")
+
+	n, err := os.Stat(a.TempFile)
+	c.Assert(os.IsExist(err), check.Equals, false)
+	c.Assert(n.Size(), check.Not(check.Equals), 22) // empty zip
+}
+
 func (s *ArchiveSuite) TestArchive_RemoveTemp_failure(c *check.C) {
 	a := &Archive{}
 	err := a.RemoveTemp()
