@@ -1,7 +1,6 @@
 package zippo
 
 import (
-	"github.com/ncw/swift"
 	"gopkg.in/check.v1"
 	"io/ioutil"
 	"net/http"
@@ -21,7 +20,7 @@ func (s *HTTPSuite) SetUpSuite(c *check.C) {
 	m := http.NewServeMux()
 	m.HandleFunc("/", HomeHandler)
 	m.HandleFunc("/z", func(w http.ResponseWriter, r *http.Request) {
-		ZipHandler(w, r, swift.Connection{})
+		ZipHandler(w, r, NewConnection())
 	})
 
 	s.server = httptest.NewServer(m)

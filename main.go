@@ -7,19 +7,12 @@ import (
 	zippo "github.com/picocandy/zippo/api"
 	"log"
 	"net/http"
-	"os"
 )
 
 var cf swift.Connection
 
 func init() {
-	cf = swift.Connection{
-		UserName: os.Getenv("SWIFT_API_USER"),
-		ApiKey:   os.Getenv("SWIFT_API_KEY"),
-		AuthUrl:  os.Getenv("SWIFT_AUTH_URL"),
-		Region:   os.Getenv("SWIFT_REGION"),
-		TenantId: os.Getenv("SWIFT_TENANT_ID"),
-	}
+	cf = zippo.NewConnection()
 }
 
 func main() {
