@@ -23,15 +23,13 @@ func GenerateTempURL(cf swift.Connection, a *Archive) (string, error) {
 		return "", err
 	}
 
-	container := os.Getenv("SWIFT_CONTAINER")
 	u.Path = fmt.Sprintf("%s/%s/%s", u.Path, container, a.String())
 
-	key := os.Getenv("SWIFT_META_TEMP")
 	method := "GET"
 	expires := int(time.Now().Unix() + 600)
 	body := fmt.Sprintf("%s\n%d\n%s", method, expires, u.Path)
 
-	h := hmac.New(sha1.New, []byte(key))
+	h := hmac.New(sha1.New, []byte(metaTempKey))
 	io.WriteString(h, body)
 
 	v := url.Values{
@@ -56,12 +54,11 @@ func NewConnection() swift.Connection {
 func UpdateAccountMetaTempURL(cf swift.Connection) error {
 	var err error
 
-	key := os.Getenv("SWIFT_META_TEMP")
-	if key == "" {
+	if metaTempKey == "" {
 		return errors.New("Missing SWIFT_META_TEMP value")
 	}
 
-	h := swift.Headers{"X-Account-Meta-Temp-Url-Key": key}
+	h := swift.Headers{"X-Account-Meta-Temp-Url-Key": metaTempKey}
 	err = cf.AccountUpdate(h)
 	if err != nil {
 		return err

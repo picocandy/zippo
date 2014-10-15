@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"github.com/ncw/swift"
 	"net/http"
-	"os"
 )
 
 func HomeHandler(w http.ResponseWriter, r *http.Request) {
@@ -50,7 +49,7 @@ func ZipHandler(w http.ResponseWriter, r *http.Request, cf swift.Connection) {
 		return
 	}
 
-	_, err = a.Upload(cf, os.Getenv("SWIFT_CONTAINER"))
+	_, err = a.Upload(cf, container)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return

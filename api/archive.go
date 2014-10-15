@@ -103,7 +103,7 @@ func (a *Archive) RemoveTemp() error {
 func (a *Archive) DownloadURL(cf swift.Connection) (string, error) {
 	var err error
 
-	i, _, err := cf.Object(os.Getenv("SWIFT_CONTAINER"), a.String())
+	i, _, err := cf.Object(container, a.String())
 	if err != nil {
 		return "", err
 	}
