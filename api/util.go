@@ -16,11 +16,6 @@ import (
 func GenerateTempURL(cf swift.Connection, a *Archive) (string, error) {
 	var err error
 
-	err = cf.Authenticate()
-	if err != nil {
-		return "", err
-	}
-
 	u, err := url.Parse(cf.Auth.StorageUrl(false))
 	if err != nil {
 		return "", err
@@ -58,11 +53,6 @@ func NewConnection() swift.Connection {
 
 func UpdateAccountMetaTempURL(cf swift.Connection) error {
 	var err error
-
-	err = cf.Authenticate()
-	if err != nil {
-		return err
-	}
 
 	key := os.Getenv("SWIFT_META_TEMP")
 	if key == "" {

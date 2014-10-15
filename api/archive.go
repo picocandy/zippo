@@ -68,11 +68,6 @@ func (a *Archive) Build() error {
 }
 
 func (a *Archive) Upload(cf swift.Connection, cn string) (ob swift.Object, err error) {
-	err = cf.Authenticate()
-	if err != nil {
-		return
-	}
-
 	f, err := os.Open(a.TempFile)
 	if err != nil {
 		return
@@ -107,11 +102,6 @@ func (a *Archive) RemoveTemp() error {
 
 func (a *Archive) DownloadURL(cf swift.Connection) (string, error) {
 	var err error
-
-	err = cf.Authenticate()
-	if err != nil {
-		return "", err
-	}
 
 	i, _, err := cf.Object(os.Getenv("SWIFT_CONTAINER"), a.String())
 	if err != nil {

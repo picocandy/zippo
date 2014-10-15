@@ -17,6 +17,11 @@ func init() {
 	check.Suite(&UtilSuite{cf: NewConnection()})
 }
 
+func (s *UtilSuite) SetUpSuite(c *check.C) {
+	err := s.cf.Authenticate()
+	c.Assert(err, check.IsNil)
+}
+
 func (s *UtilSuite) TestGenerateTempURL(c *check.C) {
 	if !*live {
 		c.Skip("-live is not provided")
