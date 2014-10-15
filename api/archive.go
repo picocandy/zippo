@@ -104,3 +104,23 @@ func (a *Archive) RemoveTemp() error {
 
 	return err
 }
+
+func (a *Archive) DownloadURL(cf swift.Connection) (string, error) {
+	var err error
+
+	err = cf.Authenticate()
+	if err != nil {
+		return "", err
+	}
+
+	i, _, err := cf.Object(os.Getenv("SWIFT_CONTAINER"), a.String())
+	if err != nil {
+		return "", err
+	}
+
+	if i.Bytes == 0 || i.Bytes == 22 {
+		return "", errors.New("Empty file detected")
+	}
+
+	return GenerateTempURL(cf, a)
+}

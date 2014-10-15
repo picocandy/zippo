@@ -32,6 +32,12 @@ func ZipHandler(w http.ResponseWriter, r *http.Request, cf swift.Connection) {
 		return
 	}
 
+	u, err := a.DownloadURL(cf)
+	if err == nil {
+		fmt.Fprint(w, u)
+		return
+	}
+
 	err = a.Build()
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
