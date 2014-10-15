@@ -21,6 +21,11 @@ func main() {
 
 	flag.Parse()
 
+	err := zippo.UpdateAccountMetaTempURL(cf)
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", zippo.HomeHandler)
 	mux.HandleFunc("/z", func(w http.ResponseWriter, r *http.Request) {

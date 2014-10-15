@@ -5,6 +5,7 @@ import (
 	"github.com/ncw/swift"
 	"gopkg.in/check.v1"
 	"net/url"
+	"os"
 	"path"
 )
 
@@ -16,7 +17,7 @@ func init() {
 	check.Suite(&UtilSuite{cf: NewConnection()})
 }
 
-func (s *UtilSuite) TestUtil_GenerateTempURL(c *check.C) {
+func (s *UtilSuite) TestGenerateTempURL(c *check.C) {
 	if !*live {
 		c.Skip("-live is not provided")
 	}
@@ -35,4 +36,19 @@ func (s *UtilSuite) TestUtil_GenerateTempURL(c *check.C) {
 	c.Assert(u.Query().Get("temp_url_sig"), check.Not(check.Equals), "")
 	c.Assert(u.Query().Get("temp_url_expires"), check.Not(check.Equals), "")
 	c.Assert(path.Base(u.Path), check.Equals, "24c6e8fcb0a625d23d2aff43ec487a90167d56bb.zip")
+}
+
+func (s *UtilSuite) TestUpdateAccountMetaTempURL(c *check.C) {
+	if !*live {
+		c.Skip("-live is not provided")
+	}
+
+	err := UpdateAccountMetaTempURL(s.cf)
+	c.Assert(err, check.IsNil)
+
+	_, h, err := s.cf.Account()
+	c.Assert(err, check.IsNil)
+
+	key := os.Getenv("SWIFT_META_TEMP")
+	c.Assert(h.AccountMetadata()["temp-url-key"], check.Equals, key)
 }

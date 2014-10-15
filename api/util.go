@@ -3,6 +3,7 @@ package zippo
 import (
 	"crypto/hmac"
 	"crypto/sha1"
+	"errors"
 	"fmt"
 	"github.com/ncw/swift"
 	"io"
@@ -53,4 +54,26 @@ func NewConnection() swift.Connection {
 		Region:   os.Getenv("SWIFT_REGION"),
 		TenantId: os.Getenv("SWIFT_TENANT_ID"),
 	}
+}
+
+func UpdateAccountMetaTempURL(cf swift.Connection) error {
+	var err error
+
+	err = cf.Authenticate()
+	if err != nil {
+		return err
+	}
+
+	key := os.Getenv("SWIFT_META_TEMP")
+	if key == "" {
+		return errors.New("Missing SWIFT_META_TEMP value")
+	}
+
+	h := swift.Headers{"X-Account-Meta-Temp-Url-Key": key}
+	err = cf.AccountUpdate(h)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
