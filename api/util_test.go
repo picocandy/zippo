@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"github.com/ncw/swift"
 	"gopkg.in/check.v1"
+	"net/http"
+	"net/http/httptest"
 	"net/url"
 	"os"
 	"path"
@@ -56,4 +58,28 @@ func (s *UtilSuite) TestUpdateAccountMetaTempURL(c *check.C) {
 
 	key := os.Getenv("SWIFT_META_TEMP")
 	c.Assert(h.AccountMetadata()["temp-url-key"], check.Equals, key)
+}
+
+func (s *UtilSuite) TestJSON(c *check.C) {
+	type Notice struct {
+		Message string `json:"message"`
+	}
+
+	f := map[int]interface{}{
+		http.StatusOK:           Notice{Message: "well done"},
+		http.StatusUnauthorized: map[string]string{"error": "unauthorized"},
+	}
+
+	e := map[int]string{
+		http.StatusOK:           `{"message":"well done"}`,
+		http.StatusUnauthorized: `{"error":"unauthorized"}`,
+	}
+
+	for k, v := range f {
+		w := httptest.NewRecorder()
+		JSON(w, v, k)
+		c.Assert(w.Code, check.Equals, k)
+		c.Assert(w.Header().Get("Content-Type"), check.Equals, "application/json; charset=UTF-8")
+		c.Assert(w.Body.String(), check.Equals, e[k])
+	}
 }

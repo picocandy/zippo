@@ -3,10 +3,12 @@ package zippo
 import (
 	"crypto/hmac"
 	"crypto/sha1"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"github.com/ncw/swift"
 	"io"
+	"net/http"
 	"net/url"
 	"os"
 	"strconv"
@@ -66,4 +68,16 @@ func UpdateAccountMetaTempURL(cf swift.Connection) error {
 	}
 
 	return nil
+}
+
+func JSON(w http.ResponseWriter, v interface{}, code int) {
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.WriteHeader(code)
+
+	s, err := json.Marshal(v)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
+
+	w.Write(s)
 }

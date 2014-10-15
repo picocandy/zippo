@@ -28,7 +28,7 @@ func ZipHandler(w http.ResponseWriter, r *http.Request, cf swift.Connection) {
 	dec := json.NewDecoder(r.Body)
 	err := dec.Decode(a)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		JSON(w, map[string]string{"error": err.Error()}, http.StatusBadRequest)
 		return
 	}
 
@@ -40,7 +40,7 @@ func ZipHandler(w http.ResponseWriter, r *http.Request, cf swift.Connection) {
 
 	u, err := a.DownloadURL(cf)
 	if err == nil {
-		fmt.Fprint(w, u)
+		JSON(w, map[string]string{"message": "OK", "url": u}, http.StatusOK)
 		return
 	}
 
@@ -62,5 +62,5 @@ func ZipHandler(w http.ResponseWriter, r *http.Request, cf swift.Connection) {
 		return
 	}
 
-	fmt.Fprint(w, u)
+	JSON(w, map[string]string{"message": "OK", "url": u}, http.StatusOK)
 }
