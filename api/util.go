@@ -3,6 +3,7 @@ package zippo
 import (
 	"crypto/hmac"
 	"crypto/sha1"
+	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -33,7 +34,7 @@ func GenerateTempURL(cf swift.Connection, a *Archive) (string, error) {
 	io.WriteString(h, body)
 
 	v := url.Values{
-		"temp_url_sig":     []string{fmt.Sprintf("%x", h.Sum(nil))},
+		"temp_url_sig":     []string{hex.EncodeToString(h.Sum(nil))},
 		"temp_url_expires": []string{strconv.Itoa(expires)},
 	}
 

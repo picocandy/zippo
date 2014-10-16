@@ -3,8 +3,8 @@ package zippo
 import (
 	"archive/zip"
 	"crypto/sha1"
+	"encoding/hex"
 	"errors"
-	"fmt"
 	"github.com/ncw/swift"
 	"io"
 	"io/ioutil"
@@ -37,7 +37,7 @@ func (a *Archive) SumHash() string {
 		io.WriteString(h, p.String())
 	}
 
-	a.Hash = fmt.Sprintf("%x", h.Sum(nil))
+	a.Hash = hex.EncodeToString(h.Sum(nil))
 	return a.Hash
 }
 
