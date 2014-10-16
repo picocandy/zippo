@@ -49,7 +49,7 @@ func ZipHandler(w http.ResponseWriter, r *http.Request, cf swift.Connection) {
 		return
 	}
 
-	_, err = a.Upload(cf, container)
+	_, _, err = a.Upload(cf, container)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return

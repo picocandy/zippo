@@ -23,13 +23,21 @@ func (a *Archive) String() string {
 		return a.Filename
 	}
 
+	return a.SumHash() + ".zip"
+}
+
+func (a *Archive) SumHash() string {
+	if a.Hash != "" {
+		return a.Hash
+	}
+
 	h := sha1.New()
 
 	for _, p := range a.Payloads {
 		io.WriteString(h, p.String())
 	}
 
-	a.Hash = fmt.Sprintf("%x.zip", h.Sum(nil))
+	a.Hash = fmt.Sprintf("%x", h.Sum(nil))
 	return a.Hash
 }
 
@@ -67,24 +75,20 @@ func (a *Archive) Build() error {
 	return nil
 }
 
-func (a *Archive) Upload(cf swift.Connection, cn string) (ob swift.Object, err error) {
+func (a *Archive) Upload(cf swift.Connection, cn string) (ob swift.Object, h swift.Headers, err error) {
 	f, err := os.Open(a.TempFile)
 	if err != nil {
 		return
 	}
 	defer f.Close()
 
-	_, err = cf.ObjectPut(cn, a.String(), f, true, "", "application/zip", swift.Headers{})
+	d := swift.Headers{"X-Object-Meta-Archive-Hash": a.SumHash()}
+	_, err = cf.ObjectPut(cn, a.String(), f, true, "", "application/zip", d)
 	if err != nil {
 		return
 	}
 
-	ob, _, err = cf.Object(cn, a.String())
-	if err != nil {
-		return
-	}
-
-	return ob, nil
+	return cf.Object(cn, a.String())
 }
 
 func (a *Archive) RemoveTemp() error {
@@ -103,13 +107,17 @@ func (a *Archive) RemoveTemp() error {
 func (a *Archive) DownloadURL(cf swift.Connection) (string, error) {
 	var err error
 
-	i, _, err := cf.Object(container, a.String())
+	i, h, err := cf.Object(container, a.String())
 	if err != nil {
 		return "", err
 	}
 
 	if i.Bytes == 0 || i.Bytes == 22 {
 		return "", errors.New("Empty file detected")
+	}
+
+	if h.ObjectMetadata()["archive-hash"] != a.SumHash() {
+		return "", errors.New("File is updated")
 	}
 
 	return GenerateTempURL(cf, a)

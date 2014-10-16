@@ -98,7 +98,7 @@ func (s *PayloadSuite) TestPayload_WriteZip_failure(c *check.C) {
 func (s *PayloadSuite) TestPayload_WriteZip(c *check.C) {
 	p := &Payload{
 		Filename: "awesome-logo.png",
-		TempFile: prepareTemp("zippo-payload-suite-"),
+		TempFile: prepareTemp("fixtures/logo.png", "zippo-payload-suite-"),
 	}
 
 	buf := new(bytes.Buffer)
@@ -131,7 +131,7 @@ func (s *PayloadSuite) TestPayload_RemoveTemp_failure(c *check.C) {
 }
 
 func (s *PayloadSuite) TestPayload_RemoveTemp(c *check.C) {
-	t := prepareTemp("zippo-payload-suite-")
+	t := prepareTemp("fixtures/logo.png", "zippo-payload-suite-")
 	p := &Payload{TempFile: t}
 
 	err := p.RemoveTemp()

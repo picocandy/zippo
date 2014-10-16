@@ -42,7 +42,7 @@ func (s *UtilSuite) TestGenerateTempURL(c *check.C) {
 
 	c.Assert(u.Query().Get("temp_url_sig"), check.Not(check.Equals), "")
 	c.Assert(u.Query().Get("temp_url_expires"), check.Not(check.Equals), "")
-	c.Assert(path.Base(u.Path), check.Equals, "24c6e8fcb0a625d23d2aff43ec487a90167d56bb.zip")
+	c.Assert(path.Base(u.Path), check.Equals, hashString+".zip")
 }
 
 func (s *UtilSuite) TestUpdateAccountMetaTempURL(c *check.C) {

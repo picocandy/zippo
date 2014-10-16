@@ -11,14 +11,14 @@ var live = flag.Bool("live", false, "Include live tests")
 
 func Test(t *testing.T) { check.TestingT(t) }
 
-func prepareTemp(prefix string) string {
+func prepareTemp(f string, prefix string) string {
 	tmp, err := ioutil.TempFile("", prefix)
 	if err != nil {
 		panic(err)
 	}
 	defer tmp.Close()
 
-	b, err := ioutil.ReadFile("fixtures/logo.png")
+	b, err := ioutil.ReadFile(f)
 	if err != nil {
 		panic(err)
 	}
@@ -31,6 +31,7 @@ func prepareTemp(prefix string) string {
 	return tmp.Name()
 }
 
+var hashString = "a7022fb57fd8fa61160268a039344780d4044464"
 var fixtures = map[string]string{
 	"archive": `
 	{
@@ -39,12 +40,14 @@ var fixtures = map[string]string{
 			{
 				"url": "http://picocandy.com/images/logo.png",
 				"filename": "picocandy.png",
-				"content_type": "image/png"
+				"content_type": "image/png",
+				"content_length": 3909
 			},
 			{
 				"url": "http://www.gorillatoolkit.org/static/images/gorilla-icon-64.png",
 				"filename": "gorilla.png",
-				"content_type": "image/png"
+				"content_type": "image/png",
+				"content_length": 6722
 			}
 		]
 	}
@@ -56,12 +59,14 @@ var fixtures = map[string]string{
 			{
 				"url": "http://picocandy.com/images/logo.png",
 				"filename": "picocandy.png",
-				"content_type": "image/png"
+				"content_type": "image/png",
+				"content_length": 3909
 			},
 			{
 				"url": "http://www.gorillatoolkit.org/static/images/gorilla-icon-64.png",
 				"filename": "gorilla.png",
-				"content_type": "image/png"
+				"content_type": "image/png",
+				"content_length": 6722
 			}
 		]
 	}
@@ -78,7 +83,8 @@ var fixtures = map[string]string{
 			{
 				"url": "http://www.gorillatoolkit.org/static/images/gorilla-icon-64.png",
 				"filename": "gorilla.png",
-				"content_type": "image/png"
+				"content_type": "image/png",
+				"content_length": 6722
 			}
 		]
 	}

@@ -11,13 +11,18 @@ import (
 )
 
 type Payload struct {
-	URL         string `json:"url"`
-	Filename    string `json:"filename"`
-	ContentType string `json:"content_type"`
-	TempFile    string `json:"-"`
+	URL           string `json:"url"`
+	Filename      string `json:"filename"`
+	ContentType   string `json:"content_type"`
+	ContentLength int    `json:"content_length,omitempty"`
+	TempFile      string `json:"-"`
 }
 
 func (p *Payload) String() string {
+	if p.ContentLength != 0 {
+		return fmt.Sprintf("%s::%d::%s", p.Filename, p.ContentLength, p.URL)
+	}
+
 	return p.Filename + "::" + p.URL
 }
 
