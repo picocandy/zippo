@@ -15,7 +15,7 @@ type Archive struct {
 	Filename string    `json:"filename,omitempty"`
 	Payloads []Payload `json:"payloads"`
 	TempFile string    `json:"-"`
-	Hash     string    `json:"-"`
+	hash     string
 }
 
 func (a *Archive) String() string {
@@ -23,12 +23,12 @@ func (a *Archive) String() string {
 		return a.Filename
 	}
 
-	return a.SumHash() + ".zip"
+	return a.Hash() + ".zip"
 }
 
-func (a *Archive) SumHash() string {
-	if a.Hash != "" {
-		return a.Hash
+func (a *Archive) Hash() string {
+	if a.hash != "" {
+		return a.hash
 	}
 
 	h := sha1.New()
@@ -37,8 +37,8 @@ func (a *Archive) SumHash() string {
 		io.WriteString(h, p.String())
 	}
 
-	a.Hash = hex.EncodeToString(h.Sum(nil))
-	return a.Hash
+	a.hash = hex.EncodeToString(h.Sum(nil))
+	return a.hash
 }
 
 func (a *Archive) Build() error {
@@ -82,7 +82,7 @@ func (a *Archive) Upload(cf swift.Connection, cn string) (ob swift.Object, h swi
 	}
 	defer f.Close()
 
-	d := swift.Headers{"X-Object-Meta-Archive-Hash": a.SumHash()}
+	d := swift.Headers{"X-Object-Meta-Archive-Hash": a.Hash()}
 	_, err = cf.ObjectPut(cn, a.String(), f, true, "", "application/zip", d)
 	if err != nil {
 		return
@@ -116,7 +116,7 @@ func (a *Archive) DownloadURL(cf swift.Connection) (string, error) {
 		return "", errors.New("Empty file detected")
 	}
 
-	if h.ObjectMetadata()["archive-hash"] != a.SumHash() {
+	if h.ObjectMetadata()["archive-hash"] != a.Hash() {
 		return "", errors.New("File is updated")
 	}
 

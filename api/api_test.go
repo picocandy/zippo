@@ -31,7 +31,7 @@ func prepareTemp(f string, prefix string) string {
 	return tmp.Name()
 }
 
-var hashString = "a7022fb57fd8fa61160268a039344780d4044464"
+var hashString = "0e3e239fac217bf5396b4e670cbf5ac7ce7dface"
 var fixtures = map[string]string{
 	"archive": `
 	{

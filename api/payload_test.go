@@ -3,6 +3,7 @@ package zippo
 import (
 	"archive/zip"
 	"bytes"
+	"github.com/ncw/swift"
 	"gopkg.in/check.v1"
 	"io"
 	"net/http"
@@ -12,10 +13,11 @@ import (
 
 type PayloadSuite struct {
 	server *httptest.Server
+	cf     swift.Connection
 }
 
 func init() {
-	check.Suite(&PayloadSuite{})
+	check.Suite(&PayloadSuite{cf: NewConnection()})
 }
 
 func (s *PayloadSuite) SetUpSuite(c *check.C) {
@@ -44,14 +46,21 @@ func (s *PayloadSuite) TearDownSuite(c *check.C) {
 	s.server.Close()
 }
 
+func (s *PayloadSuite) TestPayload_String_url(c *check.C) {
+	p := &Payload{
+		URL: "http://example.com/images/logo.png",
+	}
+
+	c.Assert(p.String(), check.Equals, "logo.png")
+}
+
 func (s *PayloadSuite) TestPayload_String(c *check.C) {
 	p := &Payload{
 		Filename: "picocandy_logo.png",
 		URL:      "http://example.com/images/logo.png",
 	}
 
-	want := "picocandy_logo.png::http://example.com/images/logo.png"
-	c.Assert(p.String(), check.Equals, want)
+	c.Assert(p.String(), check.Equals, "picocandy_logo.png")
 }
 
 func (s *PayloadSuite) TestPayload_Download_failure(c *check.C) {
@@ -141,4 +150,25 @@ func (s *PayloadSuite) TestPayload_RemoveTemp(c *check.C) {
 	_, err = os.Stat(t)
 	c.Assert(err, check.NotNil)
 	c.Assert(os.IsNotExist(err), check.Equals, true)
+}
+
+func (s *PayloadSuite) TestPayload_Upload(c *check.C) {
+	t := prepareTemp("fixtures/logo.png", "zippo-payload-suite-")
+	p := &Payload{
+		Filename:      "picocandy_logo.png",
+		URL:           "http://picocandy.com/images/logo.png",
+		ContentLength: 139100,
+		TempFile:      t,
+	}
+
+	o, h, err := p.Upload(s.cf, container)
+	c.Assert(err, check.IsNil)
+
+	c.Assert(o.Name, check.Equals, "picocandy_logo.png")
+	c.Assert(o.ContentType, check.Equals, "image/png")
+	c.Assert(o.Bytes, check.Equals, int64(139100))
+
+	c.Assert(h.ObjectMetadata()["payload-hash"], check.Equals, "be296bc2ea9cf42eb3a292c387ffedb718959f69")
+	c.Assert(h["Content-Type"], check.Equals, "image/png")
+	c.Assert(h["Content-Length"], check.Equals, "139100")
 }

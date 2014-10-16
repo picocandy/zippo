@@ -33,12 +33,12 @@ func (s *ArchiveSuite) TestArchive_String(c *check.C) {
 	c.Assert(a.String(), check.Equals, "zippo-archive.zip")
 }
 
-func (s *ArchiveSuite) TestArchive_SumHash(c *check.C) {
+func (s *ArchiveSuite) TestArchive_Hash(c *check.C) {
 	a := &Archive{}
 
 	err := json.Unmarshal([]byte(fixtures["archive-without-filename"]), a)
 	c.Assert(err, check.IsNil)
-	c.Assert(a.SumHash(), check.Equals, hashString)
+	c.Assert(a.Hash(), check.Equals, hashString)
 }
 
 func (s *ArchiveSuite) TestArchive_Build_failure(c *check.C) {
