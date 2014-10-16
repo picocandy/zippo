@@ -126,3 +126,22 @@ func (p *Payload) Upload(cf swift.Connection, cn string) (ob swift.Object, h swi
 
 	return cf.Object(cn, p.String())
 }
+
+func (p *Payload) DownloadURL(cf swift.Connection) (string, error) {
+	var err error
+
+	i, h, err := cf.Object(container, p.String())
+	if err != nil {
+		return "", err
+	}
+
+	if i.Bytes == 0 {
+		return "", errors.New("Empty file detected")
+	}
+
+	if h.ObjectMetadata()["payload-hash"] != p.Hash() {
+		return "", errors.New("File is updated")
+	}
+
+	return GenerateTempURL(cf, p)
+}

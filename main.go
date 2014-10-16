@@ -31,6 +31,9 @@ func main() {
 	mux.HandleFunc("/z", func(w http.ResponseWriter, r *http.Request) {
 		zippo.ZipHandler(w, r, cf)
 	})
+	mux.HandleFunc("/u", func(w http.ResponseWriter, r *http.Request) {
+		zippo.UploadHandler(w, r, cf)
+	})
 
 	bind := fmt.Sprintf("%s:%s", *address, *port)
 

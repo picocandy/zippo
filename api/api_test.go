@@ -89,4 +89,19 @@ var fixtures = map[string]string{
 		]
 	}
 	`,
+	"payload": `
+	{
+		"url": "http://picocandy.com/images/logo.png",
+		"filename": "picocandy.png",
+		"content_type": "image/png",
+		"content_length": 3909
+	}
+	`,
+	"payload-without-filename": `
+	{
+		"url": "http://picocandy.com/images/logo.png",
+		"content_type": "image/png",
+		"content_length": 3909
+	}
+	`,
 }

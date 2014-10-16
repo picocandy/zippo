@@ -63,3 +63,51 @@ func ZipHandler(w http.ResponseWriter, r *http.Request, cf swift.Connection) {
 
 	JSON(w, map[string]string{"message": "OK", "url": u}, http.StatusOK)
 }
+
+func UploadHandler(w http.ResponseWriter, r *http.Request, cf swift.Connection) {
+	if r.Method != "POST" {
+		w.WriteHeader(http.StatusMethodNotAllowed)
+		return
+	}
+
+	p := &Payload{}
+
+	dec := json.NewDecoder(r.Body)
+	err := dec.Decode(p)
+	if err != nil {
+		JSON(w, map[string]string{"error": err.Error()}, http.StatusBadRequest)
+		return
+	}
+
+	err = cf.Authenticate()
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	u, err := p.DownloadURL(cf)
+	if err == nil {
+		JSON(w, map[string]string{"message": "OK", "url": u}, http.StatusOK)
+		return
+	}
+
+	err = p.Download()
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	_, _, err = p.Upload(cf, container)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	u, err = p.DownloadURL(cf)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	JSON(w, map[string]string{"message": "OK", "url": u}, http.StatusOK)
+}
