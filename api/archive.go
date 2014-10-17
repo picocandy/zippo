@@ -12,9 +12,9 @@ import (
 )
 
 type Archive struct {
-	Filename string    `json:"filename,omitempty"`
-	Payloads []Payload `json:"payloads"`
-	TempFile string    `json:"-"`
+	Filename string     `json:"filename,omitempty"`
+	Payloads []*Payload `json:"payloads"`
+	TempFile string     `json:"-"`
 	hash     string
 }
 
@@ -50,12 +50,22 @@ func (a *Archive) Build() error {
 
 	z := zip.NewWriter(out)
 
+	c := make(chan error)
+
 	for _, p := range a.Payloads {
-		err := p.Download()
+		go func(p *Payload) {
+			c <- p.Download()
+		}(p)
+	}
+
+	for i := 1; i <= len(a.Payloads); i++ {
+		err := <-c
 		if err != nil {
 			return err
 		}
+	}
 
+	for _, p := range a.Payloads {
 		err = p.WriteZip(z)
 		if err != nil {
 			return err

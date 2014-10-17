@@ -38,7 +38,7 @@ func ZipHandler(w http.ResponseWriter, r *http.Request, cf swift.Connection) {
 
 	u, err := a.DownloadURL(cf)
 	if err == nil {
-		l.WithField("secure_url", u).Info("existing secure zip url")
+		l.WithField("container", container).Info("existing secure zip url")
 		JSON(w, map[string]string{"message": "OK", "url": u}, http.StatusOK)
 		return
 	}
@@ -64,6 +64,6 @@ func ZipHandler(w http.ResponseWriter, r *http.Request, cf swift.Connection) {
 		return
 	}
 
-	l.WithFields(logrus.Fields{"secure_url": u, "tmp": a.TempFile}).Info("secure zip url generated")
+	l.WithFields(logrus.Fields{"container": container, "tmp": a.TempFile}).Info("secure zip url generated")
 	JSON(w, map[string]string{"message": "OK", "url": u}, http.StatusOK)
 }

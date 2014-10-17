@@ -40,7 +40,7 @@ func UploadHandler(w http.ResponseWriter, r *http.Request, cf swift.Connection) 
 
 	u, err := p.DownloadURL(cf)
 	if err == nil {
-		l.WithField("secure_url", u).Info("existing secure url")
+		l.WithField("container", container).Info("existing secure url")
 		JSON(w, map[string]string{"message": "OK", "url": u}, http.StatusOK)
 		return
 	}
@@ -66,6 +66,6 @@ func UploadHandler(w http.ResponseWriter, r *http.Request, cf swift.Connection) 
 		return
 	}
 
-	l.WithFields(logrus.Fields{"secure_url": u, "tmp": p.TempFile}).Info("secure url generated")
+	l.WithFields(logrus.Fields{"container": container, "tmp": p.TempFile}).Info("secure url generated")
 	JSON(w, map[string]string{"message": "OK", "url": u}, http.StatusOK)
 }

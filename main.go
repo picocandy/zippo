@@ -7,11 +7,13 @@ import (
 	zippo "github.com/picocandy/zippo/api"
 	"log"
 	"net/http"
+	"runtime"
 )
 
 var cf swift.Connection
 
 func init() {
+	runtime.GOMAXPROCS(runtime.NumCPU())
 	cf = zippo.NewConnection()
 }
 

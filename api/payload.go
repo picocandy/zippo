@@ -6,6 +6,7 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
+	"github.com/Sirupsen/logrus"
 	"github.com/ncw/swift"
 	"io"
 	"io/ioutil"
@@ -55,6 +56,13 @@ func (p *Payload) Download() error {
 
 	defer out.Close()
 
+	l := log.WithFields(logrus.Fields{
+		"struct": "payload",
+		"hash":   p.Hash(),
+		"url":    p.URL,
+	})
+
+	l.WithField("method", "GET").Info("downloading...")
 	resp, err := http.Get(p.URL)
 	if err != nil {
 		return err
@@ -66,6 +74,7 @@ func (p *Payload) Download() error {
 		return fmt.Errorf("Failed to download %s, got %s", p.URL, resp.Status)
 	}
 
+	l.WithField("tmp", out.Name()).Info("saving...")
 	_, err = io.Copy(out, resp.Body)
 	if err != nil {
 		return err
