@@ -37,7 +37,7 @@ func main() {
 
 	bind := fmt.Sprintf("%s:%s", *address, *port)
 
-	if err := http.ListenAndServe(bind, mux); err != nil {
+	if err := http.ListenAndServe(bind, zippo.LogHandler(mux)); err != nil {
 		log.Fatal(err)
 	}
 }

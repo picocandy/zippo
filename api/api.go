@@ -1,14 +1,22 @@
 package zippo
 
 import (
+	"github.com/Sirupsen/logrus"
 	"github.com/ncw/swift"
 	"os"
 )
 
-var container = os.Getenv("SWIFT_CONTAINER")
-var metaTempKey = os.Getenv("SWIFT_META_TEMP")
+var (
+	container   = os.Getenv("SWIFT_CONTAINER")
+	metaTempKey = os.Getenv("SWIFT_META_TEMP")
+	log         = logrus.New()
+)
 
 type Parker interface {
 	String() string
 	DownloadURL(cf swift.Connection) (string, error)
+}
+
+func Log() *logrus.Logger {
+	return log
 }

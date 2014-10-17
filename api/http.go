@@ -1,11 +1,25 @@
 package zippo
 
 import (
-	"encoding/json"
 	"fmt"
-	"github.com/ncw/swift"
+	"github.com/Sirupsen/logrus"
 	"net/http"
 )
+
+func LogHandler(handler http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		addr := r.Header.Get("X-Real-IP")
+		if addr == "" {
+			addr = r.Header.Get("X-Forwarded-For")
+			if addr == "" {
+				addr = r.RemoteAddr
+			}
+		}
+
+		log.WithFields(logrus.Fields{"method": r.Method, "path": r.URL.Path, "remote": addr}).Info("request")
+		handler.ServeHTTP(w, r)
+	})
+}
 
 func HomeHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != "GET" {
@@ -13,101 +27,17 @@ func HomeHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	fmt.Fprint(w, "Zippo!")
+	fmt.Fprint(w, "zippo!")
 }
 
-func ZipHandler(w http.ResponseWriter, r *http.Request, cf swift.Connection) {
+func postPlease(w http.ResponseWriter, r *http.Request) (bool, map[string]string) {
 	if r.Method != "POST" {
-		w.WriteHeader(http.StatusMethodNotAllowed)
-		return
+		return false, map[string]string{"error": fmt.Sprintf("Method %s is not allowed. Please use 'POST' instead.", r.Method)}
 	}
 
-	a := &Archive{}
-
-	dec := json.NewDecoder(r.Body)
-	err := dec.Decode(a)
-	if err != nil {
-		JSON(w, map[string]string{"error": err.Error()}, http.StatusBadRequest)
-		return
-	}
-
-	err = cf.Authenticate()
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
-
-	u, err := a.DownloadURL(cf)
-	if err == nil {
-		JSON(w, map[string]string{"message": "OK", "url": u}, http.StatusOK)
-		return
-	}
-
-	err = a.Build()
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
-
-	_, _, err = a.Upload(cf, container)
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
-
-	u, err = a.DownloadURL(cf)
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
-
-	JSON(w, map[string]string{"message": "OK", "url": u}, http.StatusOK)
+	return true, map[string]string{}
 }
 
-func UploadHandler(w http.ResponseWriter, r *http.Request, cf swift.Connection) {
-	if r.Method != "POST" {
-		w.WriteHeader(http.StatusMethodNotAllowed)
-		return
-	}
-
-	p := &Payload{}
-
-	dec := json.NewDecoder(r.Body)
-	err := dec.Decode(p)
-	if err != nil {
-		JSON(w, map[string]string{"error": err.Error()}, http.StatusBadRequest)
-		return
-	}
-
-	err = cf.Authenticate()
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
-
-	u, err := p.DownloadURL(cf)
-	if err == nil {
-		JSON(w, map[string]string{"message": "OK", "url": u}, http.StatusOK)
-		return
-	}
-
-	err = p.Download()
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
-
-	_, _, err = p.Upload(cf, container)
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
-
-	u, err = p.DownloadURL(cf)
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
-
-	JSON(w, map[string]string{"message": "OK", "url": u}, http.StatusOK)
+func internalError(w http.ResponseWriter, msg string) {
+	JSON(w, map[string]string{"error": msg}, http.StatusInternalServerError)
 }

@@ -34,7 +34,7 @@ func (a *Archive) Hash() string {
 	h := sha1.New()
 
 	for _, p := range a.Payloads {
-		io.WriteString(h, p.String())
+		io.WriteString(h, p.Hash())
 	}
 
 	a.hash = hex.EncodeToString(h.Sum(nil))

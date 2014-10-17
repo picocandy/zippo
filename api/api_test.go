@@ -11,6 +11,10 @@ var live = flag.Bool("live", false, "Include live tests")
 
 func Test(t *testing.T) { check.TestingT(t) }
 
+func init() {
+	log.Out = ioutil.Discard
+}
+
 func prepareTemp(f string, prefix string) string {
 	tmp, err := ioutil.TempFile("", prefix)
 	if err != nil {
@@ -31,7 +35,7 @@ func prepareTemp(f string, prefix string) string {
 	return tmp.Name()
 }
 
-var hashString = "0e3e239fac217bf5396b4e670cbf5ac7ce7dface"
+var hashString = "fe8f6f64250d93af797e1609c8839b6de7955967"
 var fixtures = map[string]string{
 	"archive": `
 	{
