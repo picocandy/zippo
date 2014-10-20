@@ -75,6 +75,18 @@ func (s *PayloadSuite) TestPayload_Download_failure(c *check.C) {
 	c.Assert(p.TempFile, check.Equals, "")
 }
 
+func (s *PayloadSuite) TestPayload_Download_sizeMismatch(c *check.C) {
+	p := &Payload{
+		Filename:      "logo.png",
+		URL:           s.server.URL + "/logo.png",
+		ContentLength: 10,
+	}
+
+	err := p.Download()
+	c.Assert(err, check.NotNil)
+	c.Assert(p.TempFile, check.Equals, "")
+}
+
 func (s *PayloadSuite) TestPayload_Download(c *check.C) {
 	p := &Payload{
 		Filename:    "logo.png",

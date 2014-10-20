@@ -20,7 +20,7 @@ type Payload struct {
 	URL           string `json:"url"`
 	Filename      string `json:"filename"`
 	ContentType   string `json:"content_type"`
-	ContentLength int    `json:"content_length,omitempty"`
+	ContentLength int64  `json:"content_length,omitempty"`
 	TempFile      string `json:"-"`
 	hash          string
 }
@@ -42,7 +42,7 @@ func (p *Payload) Hash() string {
 
 	io.WriteString(h, p.Filename)
 	io.WriteString(h, p.URL)
-	io.WriteString(h, strconv.Itoa(p.ContentLength))
+	io.WriteString(h, strconv.FormatInt(p.ContentLength, 10))
 
 	p.hash = hex.EncodeToString(h.Sum(nil))
 	return p.hash
@@ -78,6 +78,17 @@ func (p *Payload) Download() error {
 	_, err = io.Copy(out, resp.Body)
 	if err != nil {
 		return err
+	}
+
+	if p.ContentLength != 0 {
+		i, err := os.Stat(out.Name())
+		if err != nil {
+			return err
+		}
+
+		if i.Size() != p.ContentLength {
+			return fmt.Errorf("Content length mismatch, expected %d, got %d", p.ContentLength, i.Size())
+		}
 	}
 
 	p.TempFile = out.Name()
