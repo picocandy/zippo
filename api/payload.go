@@ -86,8 +86,12 @@ func (p *Payload) Download() error {
 			return err
 		}
 
-		if i.Size() != p.ContentLength {
-			return fmt.Errorf("Content length mismatch, expected %d, got %d", p.ContentLength, i.Size())
+		if p.ContentLength == -1 {
+			p.ContentLength = i.Size()
+		} else {
+			if i.Size() != p.ContentLength {
+				return fmt.Errorf("Content length mismatch, expected %d, got %d", p.ContentLength, i.Size())
+			}
 		}
 	}
 
