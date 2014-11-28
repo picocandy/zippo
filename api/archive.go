@@ -139,5 +139,5 @@ func (a *Archive) DownloadURL(cf swift.Connection) (string, error) {
 		return "", errors.New("File is updated")
 	}
 
-	return GenerateTempURL(cf, a, a.Expiration)
+	return GenerateTempURL(cf, a, a.ExpirationSec())
 }
