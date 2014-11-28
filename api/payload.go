@@ -176,5 +176,5 @@ func (p *Payload) DownloadURL(cf swift.Connection) (string, error) {
 		return "", errors.New("File is updated")
 	}
 
-	return GenerateTempURL(cf, p, p.ExpirationSec())
+	return GenerateTempURL(cf, p)
 }

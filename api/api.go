@@ -15,6 +15,7 @@ var (
 type Parker interface {
 	String() string
 	DownloadURL(cf swift.Connection) (string, error)
+	ExpirationSec() int64
 }
 
 func Log() *logrus.Logger {
