@@ -34,6 +34,7 @@ func ZipHandler(w http.ResponseWriter, r *http.Request, cf swift.Connection) {
 		"hash":         a.Hash(),
 		"filename":     a.String(),
 		"content_type": "application/zip",
+		"expiration":   a.ExpirationSec(),
 	})
 
 	u, err := a.DownloadURL(cf)

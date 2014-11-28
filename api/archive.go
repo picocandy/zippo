@@ -12,10 +12,11 @@ import (
 )
 
 type Archive struct {
-	Filename string     `json:"filename,omitempty"`
-	Payloads []*Payload `json:"payloads"`
-	TempFile string     `json:"-"`
-	hash     string
+	Filename   string     `json:"filename,omitempty"`
+	Payloads   []*Payload `json:"payloads"`
+	TempFile   string     `json:"-"`
+	Expiration int64      `json:"expiration,omitempty"`
+	hash       string
 }
 
 func (a *Archive) String() string {
@@ -114,6 +115,14 @@ func (a *Archive) RemoveTemp() error {
 	return err
 }
 
+func (a *Archive) ExpirationSec() int64 {
+	if a.Expiration == 0 {
+		return 600
+	}
+
+	return a.Expiration
+}
+
 func (a *Archive) DownloadURL(cf swift.Connection) (string, error) {
 	var err error
 
@@ -130,5 +139,5 @@ func (a *Archive) DownloadURL(cf swift.Connection) (string, error) {
 		return "", errors.New("File is updated")
 	}
 
-	return GenerateTempURL(cf, a)
+	return GenerateTempURL(cf, a, a.Expiration)
 }

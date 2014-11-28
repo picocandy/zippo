@@ -53,7 +53,8 @@ var fixtures = map[string]string{
 				"content_type": "image/png",
 				"content_length": 6722
 			}
-		]
+		],
+		"expiration": 60
 	}
 	`,
 	"archive-without-filename": `
@@ -72,7 +73,8 @@ var fixtures = map[string]string{
 				"content_type": "image/png",
 				"content_length": 6722
 			}
-		]
+		],
+		"expiration": 60
 	}
 	`,
 	"archive-failure": `
@@ -98,14 +100,16 @@ var fixtures = map[string]string{
 		"url": "http://picocandy.com/images/logo.png",
 		"filename": "picocandy.png",
 		"content_type": "image/png",
-		"content_length": 3909
+		"content_length": 3909,
+		"expiration": 60
 	}
 	`,
 	"payload-without-filename": `
 	{
 		"url": "http://picocandy.com/images/logo.png",
 		"content_type": "image/png",
-		"content_length": 3909
+		"content_length": 3909,
+		"expiration": 60
 	}
 	`,
 }

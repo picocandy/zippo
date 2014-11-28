@@ -36,6 +36,7 @@ func UploadHandler(w http.ResponseWriter, r *http.Request, cf swift.Connection) 
 		"url":            p.URL,
 		"content_type":   p.ContentType,
 		"content_length": p.ContentLength,
+		"expiration":     p.ExpirationSec(),
 	})
 
 	u, err := p.DownloadURL(cf)

@@ -21,6 +21,7 @@ type Payload struct {
 	Filename      string `json:"filename"`
 	ContentType   string `json:"content_type"`
 	ContentLength int64  `json:"content_length,omitempty"`
+	Expiration    int64  `json:"expiration,omitempty"`
 	TempFile      string `json:"-"`
 	hash          string
 }
@@ -151,6 +152,14 @@ func (p *Payload) Upload(cf swift.Connection, cn string) (ob swift.Object, h swi
 	return cf.Object(cn, p.String())
 }
 
+func (p *Payload) ExpirationSec() int64 {
+	if p.Expiration == 0 {
+		return 600
+	}
+
+	return p.Expiration
+}
+
 func (p *Payload) DownloadURL(cf swift.Connection) (string, error) {
 	var err error
 
@@ -167,5 +176,5 @@ func (p *Payload) DownloadURL(cf swift.Connection) (string, error) {
 		return "", errors.New("File is updated")
 	}
 
-	return GenerateTempURL(cf, p)
+	return GenerateTempURL(cf, p, p.ExpirationSec())
 }

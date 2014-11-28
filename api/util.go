@@ -16,7 +16,7 @@ import (
 	"time"
 )
 
-func GenerateTempURL(cf swift.Connection, r Parker) (string, error) {
+func GenerateTempURL(cf swift.Connection, r Parker, expiration int64) (string, error) {
 	var err error
 
 	u, err := url.Parse(cf.Auth.StorageUrl(false))
@@ -27,7 +27,7 @@ func GenerateTempURL(cf swift.Connection, r Parker) (string, error) {
 	u.Path = fmt.Sprintf("%s/%s/%s", u.Path, container, r.String())
 
 	method := "GET"
-	expires := int(time.Now().Unix() + 600)
+	expires := int(time.Now().Unix() + expiration)
 	body := fmt.Sprintf("%s\n%d\n%s", method, expires, u.Path)
 
 	h := hmac.New(sha1.New, []byte(metaTempKey))

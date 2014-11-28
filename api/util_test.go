@@ -34,7 +34,7 @@ func (s *UtilSuite) TestGenerateTempURL(c *check.C) {
 	err := json.Unmarshal([]byte(fixtures["archive-without-filename"]), a)
 	c.Assert(err, check.IsNil)
 
-	f, err := GenerateTempURL(s.cf, a)
+	f, err := GenerateTempURL(s.cf, a, 300)
 	c.Assert(err, check.IsNil)
 
 	u, err := url.Parse(f)
