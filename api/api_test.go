@@ -95,6 +95,37 @@ var fixtures = map[string]string{
 		]
 	}
 	`,
+	"archive-duplicate": `
+	{
+		"filename": "",
+		"payloads": [
+			{
+				"url": "http://picocandy.com/images/unknown.png",
+				"filename": "picocandy.png",
+				"content_type": "image/png",
+				"content_length": 3909
+			},
+			{
+				"url": "http://picocandy.com/images/unknown1.png",
+				"filename": "picocandy.png",
+				"content_type": "image/png",
+				"content_length": 3922
+			},
+			{
+				"url": "http://www.gorillatoolkit.org/static/images/gorilla-icon-64.gif",
+				"filename": "picocandy.gif",
+				"content_type": "image/gif",
+				"content_length": 6709
+			},
+			{
+				"url": "http://www.gorillatoolkit.org/static/images/gorilla-icon-64.png",
+				"filename": "Picocandy.png",
+				"content_type": "image/png",
+				"content_length": 6722
+			}
+		]
+	}
+	`,
 	"payload": `
 	{
 		"url": "http://picocandy.com/images/logo.png",

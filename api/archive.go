@@ -5,10 +5,12 @@ import (
 	"crypto/sha1"
 	"encoding/hex"
 	"errors"
+	"fmt"
 	"github.com/ncw/swift"
 	"io"
 	"io/ioutil"
 	"os"
+	"strings"
 )
 
 type Archive struct {
@@ -140,4 +142,21 @@ func (a *Archive) DownloadURL(cf swift.Connection) (string, error) {
 	}
 
 	return GenerateTempURL(cf, a)
+}
+
+func (a *Archive) RenameDuplicatePayloads() {
+	filenames := make(map[string]int)
+
+	for _, p := range a.Payloads {
+		key := strings.ToLower(p.Filename)
+
+		_, present := filenames[key]
+		if present {
+			filenames[key]++
+			file, ext := SplitFilename(p.Filename)
+			p.Filename = fmt.Sprintf("%s-%d%s", file, filenames[key], ext)
+		} else {
+			filenames[key] = 0
+		}
+	}
 }

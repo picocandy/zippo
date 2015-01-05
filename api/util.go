@@ -80,3 +80,19 @@ func JSON(w http.ResponseWriter, v interface{}, code int) {
 
 	w.Write(s)
 }
+
+func SplitFilename(s string) (string, string) {
+	file := s
+	ext := ""
+
+	for i := len(s) - 1; i >= 0; i-- {
+		if s[i] == '.' {
+			file = s[:i]
+			ext = s[i:]
+
+			break
+		}
+	}
+
+	return file, ext
+}

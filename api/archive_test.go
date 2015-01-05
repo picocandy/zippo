@@ -108,3 +108,17 @@ func (s *ArchiveSuite) TestArchive_RemoveTemp(c *check.C) {
 	c.Assert(err, check.NotNil)
 	c.Assert(os.IsNotExist(err), check.Equals, true)
 }
+
+func (s *ArchiveSuite) TestArchive_RenameDuplicatePayloads(c *check.C) {
+	a := &Archive{}
+
+	err := json.Unmarshal([]byte(fixtures["archive-duplicate"]), a)
+	c.Assert(err, check.IsNil)
+
+	a.RenameDuplicatePayloads()
+
+	c.Assert(a.Payloads[0].Filename, check.Equals, "picocandy.png")
+	c.Assert(a.Payloads[1].Filename, check.Equals, "picocandy-1.png")
+	c.Assert(a.Payloads[2].Filename, check.Equals, "picocandy.gif")
+	c.Assert(a.Payloads[3].Filename, check.Equals, "Picocandy-2.png")
+}
