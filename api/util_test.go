@@ -83,3 +83,15 @@ func (s *UtilSuite) TestJSON(c *check.C) {
 		c.Assert(w.Body.String(), check.Equals, e[k])
 	}
 }
+
+func (s *UtilSuite) TestSplitFilename_withExtension(c *check.C) {
+	file, ext := SplitFilename("picocandy.png")
+	c.Assert(file, check.Equals, "picocandy")
+	c.Assert(ext, check.Equals, ".png")
+}
+
+func (s *UtilSuite) TestSplitFilename_withoutExtension(c *check.C) {
+	file, ext := SplitFilename("picocandy")
+	c.Assert(file, check.Equals, "picocandy")
+	c.Assert(ext, check.Equals, "")
+}

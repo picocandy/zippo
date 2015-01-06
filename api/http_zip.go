@@ -23,6 +23,8 @@ func ZipHandler(w http.ResponseWriter, r *http.Request, cf swift.Connection) {
 		return
 	}
 
+	a.RenameDuplicatePayloads()
+
 	err = cf.Authenticate()
 	if err != nil {
 		internalError(w, "Unable to authenticate to Rackspace Cloud Files")
