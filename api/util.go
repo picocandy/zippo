@@ -43,12 +43,20 @@ func GenerateTempURL(cf swift.Connection, r Parker) (string, error) {
 }
 
 func NewConnection() swift.Connection {
+	var internal bool
+	if os.Getenv("SWIFT_INTERNAL") == "true" {
+		internal = true
+	} else {
+		internal = false
+	}
+
 	return swift.Connection{
 		UserName: os.Getenv("SWIFT_API_USER"),
 		ApiKey:   os.Getenv("SWIFT_API_KEY"),
 		AuthUrl:  os.Getenv("SWIFT_AUTH_URL"),
 		Region:   os.Getenv("SWIFT_REGION"),
 		TenantId: os.Getenv("SWIFT_TENANT_ID"),
+		Internal: internal,
 	}
 }
 
