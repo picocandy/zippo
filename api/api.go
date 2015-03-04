@@ -2,6 +2,7 @@ package zippo
 
 import (
 	"errors"
+	"fmt"
 	"github.com/Sirupsen/logrus"
 	"github.com/ncw/swift"
 	"io"
@@ -50,15 +51,24 @@ func (c *Callback) CallCallbackURL(data interface{}) error {
 }
 
 type CloudFile struct {
-	cf swift.Connection
+	cf        swift.Connection
+	container string
 }
 
 func (c *CloudFile) SetConnection(conn swift.Connection) {
 	c.cf = conn
 }
 
+func (c *CloudFile) SetContainer(str string) {
+	c.container = str
+}
+
 func (c *CloudFile) Authenticate() error {
 	return c.cf.Authenticate()
+}
+
+func (c *CloudFile) Container() string {
+	return c.container
 }
 
 type Temporary struct {
@@ -105,4 +115,42 @@ func (t *Temporary) RemoveTemp() error {
 	}
 
 	return err
+}
+
+type Transformer interface {
+	Authenticate() error
+	Container() string
+	String() string
+	Build() error
+	Upload() (ob swift.Object, h swift.Headers, err error)
+	DownloadURL() (string, error)
+}
+
+func Process(t Transformer) (string, error) {
+	err := t.Authenticate()
+	if err != nil {
+		return "", errors.New("Unable to authenticate to Rackspace Cloud Files")
+	}
+
+	u, err := t.DownloadURL()
+	if err == nil {
+		return u, nil
+	}
+
+	err = t.Build()
+	if err != nil {
+		return "", fmt.Errorf("Unable to build the file: %q", err.Error())
+	}
+
+	_, _, err = t.Upload()
+	if err != nil {
+		return "", fmt.Errorf("Unable to upload file to Rackspace Cloud Files: %q", err.Error())
+	}
+
+	u, err = t.DownloadURL()
+	if err != nil {
+		return "", fmt.Errorf("Unable to get download url for %s: %q", t.String(), err.Error())
+	}
+
+	return u, nil
 }

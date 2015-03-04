@@ -23,6 +23,10 @@ type Archive struct {
 	hash     string
 }
 
+func NewArchive(cf swift.Connection) *Archive {
+	return &Archive{CloudFile: CloudFile{cf: cf, container: container}}
+}
+
 func (a *Archive) String() string {
 	if a.Filename != "" {
 		return a.Filename
@@ -92,7 +96,7 @@ func (a *Archive) Build() error {
 	return nil
 }
 
-func (a *Archive) Upload(cn string) (ob swift.Object, h swift.Headers, err error) {
+func (a *Archive) Upload() (ob swift.Object, h swift.Headers, err error) {
 	f, err := os.Open(a.TempFile)
 	if err != nil {
 		return
@@ -100,12 +104,12 @@ func (a *Archive) Upload(cn string) (ob swift.Object, h swift.Headers, err error
 	defer f.Close()
 
 	d := swift.Headers{"X-Object-Meta-Archive-Hash": a.Hash()}
-	_, err = a.cf.ObjectPut(cn, a.String(), f, true, "", "application/zip", d)
+	_, err = a.cf.ObjectPut(a.Container(), a.String(), f, true, "", "application/zip", d)
 	if err != nil {
 		return
 	}
 
-	return a.cf.Object(cn, a.String())
+	return a.cf.Object(a.Container(), a.String())
 }
 
 func (a *Archive) DownloadURL() (string, error) {

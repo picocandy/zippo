@@ -187,9 +187,10 @@ func (s *PayloadSuite) TestPayload_Upload(c *check.C) {
 	p.TempFile = t
 
 	p.SetConnection(NewConnection())
+	p.SetContainer(container)
 	p.Authenticate()
 
-	o, h, err := p.Upload(container)
+	o, h, err := p.Upload()
 	c.Assert(err, check.IsNil)
 
 	c.Assert(o.Name, check.Equals, "picocandy_logo.png")

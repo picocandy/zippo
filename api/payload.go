@@ -27,6 +27,10 @@ type Payload struct {
 	hash          string
 }
 
+func NewPayload(cf swift.Connection) *Payload {
+	return &Payload{CloudFile: CloudFile{cf: cf, container: container}}
+}
+
 func (p *Payload) String() string {
 	if p.Filename != "" {
 		return p.Filename
@@ -109,7 +113,7 @@ func (p *Payload) WriteZip(z *zip.Writer) error {
 	return t.Close()
 }
 
-func (p *Payload) Upload(cn string) (ob swift.Object, h swift.Headers, err error) {
+func (p *Payload) Upload() (ob swift.Object, h swift.Headers, err error) {
 	f, err := os.Open(p.TempFile)
 	if err != nil {
 		return
@@ -117,12 +121,12 @@ func (p *Payload) Upload(cn string) (ob swift.Object, h swift.Headers, err error
 	defer f.Close()
 
 	d := swift.Headers{"X-Object-Meta-Payload-Hash": p.Hash()}
-	_, err = p.cf.ObjectPut(cn, p.String(), f, true, "", p.ContentType, d)
+	_, err = p.cf.ObjectPut(p.Container(), p.String(), f, true, "", p.ContentType, d)
 	if err != nil {
 		return
 	}
 
-	return p.cf.Object(cn, p.String())
+	return p.cf.Object(p.Container(), p.String())
 }
 
 func (p *Payload) DownloadURL() (string, error) {

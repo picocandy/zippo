@@ -73,6 +73,7 @@ func (s *ArchiveSuite) TestArchive_Upload(c *check.C) {
 	}
 
 	a := &Archive{}
+	a.SetContainer(container)
 	err := json.Unmarshal([]byte(fixtures["archive"]), a)
 	c.Assert(err, check.IsNil)
 
@@ -80,7 +81,7 @@ func (s *ArchiveSuite) TestArchive_Upload(c *check.C) {
 	a.SetConnection(NewConnection())
 	a.Authenticate()
 
-	o, h, err := a.Upload(container)
+	o, h, err := a.Upload()
 	c.Assert(err, check.IsNil)
 
 	c.Assert(o.Name, check.Equals, "zippo-archive.zip")

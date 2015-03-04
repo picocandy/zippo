@@ -12,7 +12,7 @@ var live = flag.Bool("live", false, "Include live tests")
 func Test(t *testing.T) { check.TestingT(t) }
 
 func init() {
-	log.Out = ioutil.Discard
+	//log.Out = ioutil.Discard
 }
 
 func prepareTemp(f string, prefix string) string {
@@ -141,6 +141,16 @@ var fixtures = map[string]string{
 		"content_type": "image/png",
 		"content_length": 3909,
 		"expiration": 60
+	}
+	`,
+	"payload-with-callback": `
+	{
+		"url": "http://picocandy.com/images/logo.png",
+		"filename": "picocandy.png",
+		"content_type": "image/png",
+		"content_length": 3909,
+		"expiration": 60,
+		"callback_url": "http://example.com/"
 	}
 	`,
 }
