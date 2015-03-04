@@ -109,19 +109,6 @@ func (p *Payload) WriteZip(z *zip.Writer) error {
 	return t.Close()
 }
 
-func (p *Payload) RemoveTemp() error {
-	if p.TempFile == "" {
-		return errors.New("No valid temporary file available")
-	}
-
-	err := os.Remove(p.TempFile)
-	if err == nil {
-		p.TempFile = ""
-	}
-
-	return err
-}
-
 func (p *Payload) Upload(cn string) (ob swift.Object, h swift.Headers, err error) {
 	f, err := os.Open(p.TempFile)
 	if err != nil {
