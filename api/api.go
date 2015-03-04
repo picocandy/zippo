@@ -1,8 +1,11 @@
 package zippo
 
 import (
+	"errors"
 	"github.com/Sirupsen/logrus"
 	"github.com/ncw/swift"
+	"io"
+	"io/ioutil"
 	"os"
 )
 
@@ -56,4 +59,50 @@ func (c *CloudFile) SetConnection(conn swift.Connection) {
 
 func (c *CloudFile) Authenticate() error {
 	return c.cf.Authenticate()
+}
+
+type Temporary struct {
+	TempFile string `json:"-"`
+}
+
+func (t *Temporary) WriteTemp(str string, data io.Reader) error {
+	out, err := t.CreateTemp(str)
+	if err != nil {
+		return err
+	}
+	defer out.Close()
+
+	_, err = io.Copy(out, data)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (t *Temporary) CreateTemp(str string) (*os.File, error) {
+	out, err := ioutil.TempFile("", str)
+	if err != nil {
+		return nil, err
+	}
+
+	t.TempFile = out.Name()
+	return out, nil
+}
+
+func (t *Temporary) TempStat() (os.FileInfo, error) {
+	return os.Stat(t.TempFile)
+}
+
+func (t *Temporary) RemoveTemp() error {
+	if t.TempFile == "" {
+		return errors.New("No valid temporary file available")
+	}
+
+	err := os.Remove(t.TempFile)
+	if err == nil {
+		t.TempFile = ""
+	}
+
+	return err
 }

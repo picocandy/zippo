@@ -100,7 +100,8 @@ func (s *ArchiveSuite) TestArchive_RemoveTemp_failure(c *check.C) {
 
 func (s *ArchiveSuite) TestArchive_RemoveTemp(c *check.C) {
 	t := prepareTemp("fixtures/logo.png", "zippo-archive-suite-")
-	a := &Archive{TempFile: t}
+	a := &Archive{}
+	a.TempFile = t
 
 	err := a.RemoveTemp()
 	c.Assert(err, check.IsNil)

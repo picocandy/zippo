@@ -130,10 +130,8 @@ func (s *PayloadSuite) TestPayload_WriteZip_failure(c *check.C) {
 }
 
 func (s *PayloadSuite) TestPayload_WriteZip(c *check.C) {
-	p := &Payload{
-		Filename: "awesome-logo.png",
-		TempFile: prepareTemp("fixtures/logo.png", "zippo-payload-suite-"),
-	}
+	p := &Payload{Filename: "awesome-logo.png"}
+	p.TempFile = prepareTemp("fixtures/logo.png", "zippo-payload-suite-")
 
 	buf := new(bytes.Buffer)
 	z := zip.NewWriter(buf)
@@ -166,7 +164,8 @@ func (s *PayloadSuite) TestPayload_RemoveTemp_failure(c *check.C) {
 
 func (s *PayloadSuite) TestPayload_RemoveTemp(c *check.C) {
 	t := prepareTemp("fixtures/logo.png", "zippo-payload-suite-")
-	p := &Payload{TempFile: t}
+	p := &Payload{}
+	p.TempFile = t
 
 	err := p.RemoveTemp()
 	c.Assert(err, check.IsNil)
@@ -183,8 +182,9 @@ func (s *PayloadSuite) TestPayload_Upload(c *check.C) {
 		Filename:      "picocandy_logo.png",
 		URL:           "http://picocandy.com/images/logo.png",
 		ContentLength: 139100,
-		TempFile:      t,
 	}
+
+	p.TempFile = t
 
 	p.SetConnection(NewConnection())
 	p.Authenticate()

@@ -9,7 +9,6 @@ import (
 	"github.com/Sirupsen/logrus"
 	"github.com/ncw/swift"
 	"io"
-	"io/ioutil"
 	"os"
 	"strings"
 )
@@ -18,9 +17,9 @@ type Archive struct {
 	Expiration
 	Callback
 	CloudFile
+	Temporary
 	Filename string     `json:"filename,omitempty"`
 	Payloads []*Payload `json:"payloads"`
-	TempFile string     `json:"-"`
 	hash     string
 }
 
@@ -48,7 +47,7 @@ func (a *Archive) Hash() string {
 }
 
 func (a *Archive) Build() error {
-	out, err := ioutil.TempFile("", a.String())
+	out, err := a.CreateTemp(a.String())
 	if err != nil {
 		return err
 	}
@@ -60,6 +59,7 @@ func (a *Archive) Build() error {
 
 	for _, p := range a.Payloads {
 		go func(p *Payload) {
+			p.CallbackURL = ""
 			p.SetConnection(a.cf)
 			c <- p.Build()
 		}(p)
@@ -68,6 +68,7 @@ func (a *Archive) Build() error {
 	for i := 1; i <= len(a.Payloads); i++ {
 		err := <-c
 		if err != nil {
+			a.RemoveTemp()
 			return err
 		}
 	}
@@ -85,10 +86,9 @@ func (a *Archive) Build() error {
 	}
 
 	if err = z.Close(); err != nil {
-		return err
+		return a.RemoveTemp()
 	}
 
-	a.TempFile = out.Name()
 	return nil
 }
 
@@ -106,19 +106,6 @@ func (a *Archive) Upload(cn string) (ob swift.Object, h swift.Headers, err error
 	}
 
 	return a.cf.Object(cn, a.String())
-}
-
-func (a *Archive) RemoveTemp() error {
-	if a.TempFile == "" {
-		return errors.New("No valid temporary file available")
-	}
-
-	err := os.Remove(a.TempFile)
-	if err == nil {
-		a.TempFile = ""
-	}
-
-	return err
 }
 
 func (a *Archive) DownloadURL() (string, error) {

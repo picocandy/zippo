@@ -9,7 +9,6 @@ import (
 	"github.com/Sirupsen/logrus"
 	"github.com/ncw/swift"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"os"
 	"path"
@@ -20,11 +19,11 @@ type Payload struct {
 	Expiration
 	Callback
 	CloudFile
+	Temporary
 	URL           string `json:"url"`
 	Filename      string `json:"filename"`
 	ContentType   string `json:"content_type"`
 	ContentLength int64  `json:"content_length,omitempty"`
-	TempFile      string `json:"-"`
 	hash          string
 }
 
@@ -52,20 +51,6 @@ func (p *Payload) Hash() string {
 }
 
 func (p *Payload) Build() error {
-	out, err := ioutil.TempFile("", p.Filename)
-	if err != nil {
-		return err
-	}
-
-	defer out.Close()
-
-	l := log.WithFields(logrus.Fields{
-		"struct": "payload",
-		"hash":   p.Hash(),
-		"url":    p.URL,
-	})
-
-	l.WithField("method", "GET").Info("downloading...")
 	resp, err := http.Get(p.URL)
 	if err != nil {
 		return err
@@ -77,14 +62,13 @@ func (p *Payload) Build() error {
 		return fmt.Errorf("Failed to download %s, got %s", p.URL, resp.Status)
 	}
 
-	l.WithField("tmp", out.Name()).Info("saving...")
-	_, err = io.Copy(out, resp.Body)
+	err = p.WriteTemp(p.Filename, resp.Body)
 	if err != nil {
-		return err
+		return fmt.Errorf("Failed to save %s to %s: %s", p.URL, p.TempFile, err.Error())
 	}
 
 	if p.ContentLength != 0 {
-		i, err := os.Stat(out.Name())
+		i, err := p.TempStat()
 		if err != nil {
 			return err
 		}
@@ -93,12 +77,12 @@ func (p *Payload) Build() error {
 			p.ContentLength = i.Size()
 		} else {
 			if i.Size() != p.ContentLength {
+				p.RemoveTemp()
 				return fmt.Errorf("Content length mismatch, expected %d, got %d", p.ContentLength, i.Size())
 			}
 		}
 	}
 
-	p.TempFile = out.Name()
 	return nil
 }
 
