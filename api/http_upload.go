@@ -4,11 +4,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/Sirupsen/logrus"
-	"github.com/ncw/swift"
 	"net/http"
 )
 
-func UploadHandler(w http.ResponseWriter, r *http.Request, cf swift.Connection) {
+func (h *Handler) Upload(w http.ResponseWriter, r *http.Request) {
 	if ok, m := postPlease(w, r); !ok {
 		JSON(w, m, http.StatusMethodNotAllowed)
 		return
@@ -23,44 +22,38 @@ func UploadHandler(w http.ResponseWriter, r *http.Request, cf swift.Connection) 
 		return
 	}
 
-	err = cf.Authenticate()
+	p.SetConnection(h.cf)
+
+	err = p.Authenticate()
 	if err != nil {
 		internalError(w, "Unable to authenticate to Rackspace Cloud Files")
 		return
 	}
 
-	l := log.WithFields(logrus.Fields{
-		"handler":        "upload",
-		"hash":           p.Hash(),
-		"filename":       p.String(),
-		"url":            p.URL,
-		"content_type":   p.ContentType,
-		"content_length": p.ContentLength,
-		"expiration":     p.ExpirationSec(),
-	})
+	l := log.WithFields(p.LogFields()).WithField("handler", "upload")
 
-	u, err := p.DownloadURL(cf)
+	u, err := p.DownloadURL()
 	if err == nil {
 		l.WithField("container", container).Info("existing secure url")
 		JSON(w, map[string]string{"message": "OK", "url": u}, http.StatusOK)
 		return
 	}
 
-	err = p.Download()
+	err = p.Build()
 	if err != nil {
 		l.WithField("error", err.Error()).Warn("download error")
 		internalError(w, fmt.Sprintf("Unable to download the file: '%s'", err.Error()))
 		return
 	}
 
-	_, _, err = p.Upload(cf, container)
+	_, _, err = p.Upload(container)
 	if err != nil {
 		l.WithFields(logrus.Fields{"tmp": p.TempFile, "error": err.Error()}).Warn("upload error")
 		internalError(w, "Unable to upload file to Rackspace Cloud Files")
 		return
 	}
 
-	u, err = p.DownloadURL(cf)
+	u, err = p.DownloadURL()
 	if err != nil {
 		l.WithField("error", err.Error()).Warn("generating secure url failed")
 		internalError(w, fmt.Sprintf("Unable to get download url for %s", p.String()))

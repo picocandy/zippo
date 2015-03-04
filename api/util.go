@@ -1,6 +1,7 @@
 package zippo
 
 import (
+	"bytes"
 	"crypto/hmac"
 	"crypto/sha1"
 	"encoding/hex"
@@ -87,6 +88,28 @@ func JSON(w http.ResponseWriter, v interface{}, code int) {
 	}
 
 	w.Write(s)
+}
+
+func PostJSON(u string, v interface{}) error {
+	s, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	req, err := http.NewRequest("POST", u, bytes.NewBuffer(s))
+	if err != nil {
+		return err
+	}
+
+	req.Header.Set("Content-Type", "application/json")
+
+	c := &http.Client{}
+	_, err = c.Do(req)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func SplitFilename(s string) (string, string) {

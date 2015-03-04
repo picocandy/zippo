@@ -17,11 +17,13 @@ import (
 )
 
 type Payload struct {
+	Expiration
+	Callback
+	CloudFile
 	URL           string `json:"url"`
 	Filename      string `json:"filename"`
 	ContentType   string `json:"content_type"`
 	ContentLength int64  `json:"content_length,omitempty"`
-	Expiration    int64  `json:"expiration,omitempty"`
 	TempFile      string `json:"-"`
 	hash          string
 }
@@ -49,7 +51,7 @@ func (p *Payload) Hash() string {
 	return p.hash
 }
 
-func (p *Payload) Download() error {
+func (p *Payload) Build() error {
 	out, err := ioutil.TempFile("", p.Filename)
 	if err != nil {
 		return err
@@ -136,7 +138,7 @@ func (p *Payload) RemoveTemp() error {
 	return err
 }
 
-func (p *Payload) Upload(cf swift.Connection, cn string) (ob swift.Object, h swift.Headers, err error) {
+func (p *Payload) Upload(cn string) (ob swift.Object, h swift.Headers, err error) {
 	f, err := os.Open(p.TempFile)
 	if err != nil {
 		return
@@ -144,26 +146,18 @@ func (p *Payload) Upload(cf swift.Connection, cn string) (ob swift.Object, h swi
 	defer f.Close()
 
 	d := swift.Headers{"X-Object-Meta-Payload-Hash": p.Hash()}
-	_, err = cf.ObjectPut(cn, p.String(), f, true, "", p.ContentType, d)
+	_, err = p.cf.ObjectPut(cn, p.String(), f, true, "", p.ContentType, d)
 	if err != nil {
 		return
 	}
 
-	return cf.Object(cn, p.String())
+	return p.cf.Object(cn, p.String())
 }
 
-func (p *Payload) ExpirationSec() int64 {
-	if p.Expiration == 0 {
-		return 600
-	}
-
-	return p.Expiration
-}
-
-func (p *Payload) DownloadURL(cf swift.Connection) (string, error) {
+func (p *Payload) DownloadURL() (string, error) {
 	var err error
 
-	i, h, err := cf.Object(container, p.String())
+	i, h, err := p.cf.Object(container, p.String())
 	if err != nil {
 		return "", err
 	}
@@ -176,5 +170,16 @@ func (p *Payload) DownloadURL(cf swift.Connection) (string, error) {
 		return "", errors.New("File is updated")
 	}
 
-	return GenerateTempURL(cf, p)
+	return GenerateTempURL(p.cf, p)
+}
+
+func (p *Payload) LogFields() logrus.Fields {
+	return logrus.Fields{
+		"hash":           p.Hash(),
+		"filename":       p.String(),
+		"url":            p.URL,
+		"content_type":   p.ContentType,
+		"content_length": p.ContentLength,
+		"expiration":     p.ExpirationSec(),
+	}
 }

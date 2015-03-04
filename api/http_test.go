@@ -16,14 +16,11 @@ func init() {
 }
 
 func (s *HTTPSuite) SetUpSuite(c *check.C) {
+	h := NewHandler(NewConnection())
 	m := http.NewServeMux()
 	m.HandleFunc("/", HomeHandler)
-	m.HandleFunc("/z", func(w http.ResponseWriter, r *http.Request) {
-		ZipHandler(w, r, NewConnection())
-	})
-	m.HandleFunc("/u", func(w http.ResponseWriter, r *http.Request) {
-		UploadHandler(w, r, NewConnection())
-	})
+	m.HandleFunc("/z", h.ZipUpload)
+	m.HandleFunc("/u", h.Upload)
 
 	s.server = httptest.NewServer(m)
 }

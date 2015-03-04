@@ -30,6 +30,8 @@ func (s *UtilSuite) TestGenerateTempURL(c *check.C) {
 	}
 
 	a := &Archive{}
+	a.SetConnection(NewConnection())
+	a.Authenticate()
 
 	err := json.Unmarshal([]byte(fixtures["archive-without-filename"]), a)
 	c.Assert(err, check.IsNil)

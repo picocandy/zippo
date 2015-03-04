@@ -70,7 +70,7 @@ func (s *PayloadSuite) TestPayload_Download_failure(c *check.C) {
 		ContentType: "image/png",
 	}
 
-	err := p.Download()
+	err := p.Build()
 	c.Assert(err, check.NotNil)
 	c.Assert(p.TempFile, check.Equals, "")
 }
@@ -82,7 +82,7 @@ func (s *PayloadSuite) TestPayload_Download_sizeMismatch(c *check.C) {
 		ContentLength: 10,
 	}
 
-	err := p.Download()
+	err := p.Build()
 	c.Assert(err, check.NotNil)
 	c.Assert(p.TempFile, check.Equals, "")
 }
@@ -94,7 +94,7 @@ func (s *PayloadSuite) TestPayload_Download_sizeAuto(c *check.C) {
 		ContentLength: -1,
 	}
 
-	err := p.Download()
+	err := p.Build()
 	c.Assert(err, check.IsNil)
 	c.Assert(p.ContentLength, check.Equals, int64(139100))
 	c.Assert(p.TempFile, check.Not(check.Equals), "")
@@ -107,7 +107,7 @@ func (s *PayloadSuite) TestPayload_Download(c *check.C) {
 		ContentType: "image/png",
 	}
 
-	err := p.Download()
+	err := p.Build()
 	c.Assert(err, check.IsNil)
 	c.Assert(p.TempFile, check.Not(check.Equals), "")
 }
@@ -186,7 +186,10 @@ func (s *PayloadSuite) TestPayload_Upload(c *check.C) {
 		TempFile:      t,
 	}
 
-	o, h, err := p.Upload(s.cf, container)
+	p.SetConnection(NewConnection())
+	p.Authenticate()
+
+	o, h, err := p.Upload(container)
 	c.Assert(err, check.IsNil)
 
 	c.Assert(o.Name, check.Equals, "picocandy_logo.png")

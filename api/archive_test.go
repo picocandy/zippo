@@ -77,8 +77,10 @@ func (s *ArchiveSuite) TestArchive_Upload(c *check.C) {
 	c.Assert(err, check.IsNil)
 
 	a.TempFile = prepareTemp("fixtures/zippo-archive.zip", "zippo-archive-suite-")
+	a.SetConnection(NewConnection())
+	a.Authenticate()
 
-	o, h, err := a.Upload(s.cf, container)
+	o, h, err := a.Upload(container)
 	c.Assert(err, check.IsNil)
 
 	c.Assert(o.Name, check.Equals, "zippo-archive.zip")

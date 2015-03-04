@@ -28,14 +28,11 @@ func main() {
 		log.Fatal(err)
 	}
 
+	h := zippo.NewHandler(cf)
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", zippo.HomeHandler)
-	mux.HandleFunc("/z", func(w http.ResponseWriter, r *http.Request) {
-		zippo.ZipHandler(w, r, cf)
-	})
-	mux.HandleFunc("/u", func(w http.ResponseWriter, r *http.Request) {
-		zippo.UploadHandler(w, r, cf)
-	})
+	mux.HandleFunc("/z", h.ZipUpload)
+	mux.HandleFunc("/u", h.Upload)
 
 	bind := fmt.Sprintf("%s:%s", *address, *port)
 

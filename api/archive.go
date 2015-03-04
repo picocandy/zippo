@@ -6,6 +6,7 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
+	"github.com/Sirupsen/logrus"
 	"github.com/ncw/swift"
 	"io"
 	"io/ioutil"
@@ -14,11 +15,13 @@ import (
 )
 
 type Archive struct {
-	Filename   string     `json:"filename,omitempty"`
-	Payloads   []*Payload `json:"payloads"`
-	TempFile   string     `json:"-"`
-	Expiration int64      `json:"expiration,omitempty"`
-	hash       string
+	Expiration
+	Callback
+	CloudFile
+	Filename string     `json:"filename,omitempty"`
+	Payloads []*Payload `json:"payloads"`
+	TempFile string     `json:"-"`
+	hash     string
 }
 
 func (a *Archive) String() string {
@@ -57,7 +60,8 @@ func (a *Archive) Build() error {
 
 	for _, p := range a.Payloads {
 		go func(p *Payload) {
-			c <- p.Download()
+			p.SetConnection(a.cf)
+			c <- p.Build()
 		}(p)
 	}
 
@@ -88,7 +92,7 @@ func (a *Archive) Build() error {
 	return nil
 }
 
-func (a *Archive) Upload(cf swift.Connection, cn string) (ob swift.Object, h swift.Headers, err error) {
+func (a *Archive) Upload(cn string) (ob swift.Object, h swift.Headers, err error) {
 	f, err := os.Open(a.TempFile)
 	if err != nil {
 		return
@@ -96,12 +100,12 @@ func (a *Archive) Upload(cf swift.Connection, cn string) (ob swift.Object, h swi
 	defer f.Close()
 
 	d := swift.Headers{"X-Object-Meta-Archive-Hash": a.Hash()}
-	_, err = cf.ObjectPut(cn, a.String(), f, true, "", "application/zip", d)
+	_, err = a.cf.ObjectPut(cn, a.String(), f, true, "", "application/zip", d)
 	if err != nil {
 		return
 	}
 
-	return cf.Object(cn, a.String())
+	return a.cf.Object(cn, a.String())
 }
 
 func (a *Archive) RemoveTemp() error {
@@ -117,18 +121,10 @@ func (a *Archive) RemoveTemp() error {
 	return err
 }
 
-func (a *Archive) ExpirationSec() int64 {
-	if a.Expiration == 0 {
-		return 600
-	}
-
-	return a.Expiration
-}
-
-func (a *Archive) DownloadURL(cf swift.Connection) (string, error) {
+func (a *Archive) DownloadURL() (string, error) {
 	var err error
 
-	i, h, err := cf.Object(container, a.String())
+	i, h, err := a.cf.Object(container, a.String())
 	if err != nil {
 		return "", err
 	}
@@ -141,7 +137,7 @@ func (a *Archive) DownloadURL(cf swift.Connection) (string, error) {
 		return "", errors.New("File is updated")
 	}
 
-	return GenerateTempURL(cf, a)
+	return GenerateTempURL(a.cf, a)
 }
 
 func (a *Archive) RenameDuplicatePayloads() {
@@ -158,5 +154,14 @@ func (a *Archive) RenameDuplicatePayloads() {
 		} else {
 			filenames[key] = 0
 		}
+	}
+}
+
+func (a *Archive) LogFields() logrus.Fields {
+	return logrus.Fields{
+		"hash":         a.Hash(),
+		"filename":     a.String(),
+		"content_type": "application/zip",
+		"expiration":   a.ExpirationSec(),
 	}
 }

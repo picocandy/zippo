@@ -4,11 +4,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/Sirupsen/logrus"
-	"github.com/ncw/swift"
 	"net/http"
 )
 
-func ZipHandler(w http.ResponseWriter, r *http.Request, cf swift.Connection) {
+func (h *Handler) ZipUpload(w http.ResponseWriter, r *http.Request) {
 	if ok, m := postPlease(w, r); !ok {
 		JSON(w, m, http.StatusMethodNotAllowed)
 		return
@@ -25,21 +24,20 @@ func ZipHandler(w http.ResponseWriter, r *http.Request, cf swift.Connection) {
 
 	a.RenameDuplicatePayloads()
 
-	err = cf.Authenticate()
+	if a.HasCallbackURL() {
+	}
+
+	a.SetConnection(h.cf)
+
+	err = a.Authenticate()
 	if err != nil {
 		internalError(w, "Unable to authenticate to Rackspace Cloud Files")
 		return
 	}
 
-	l := log.WithFields(logrus.Fields{
-		"handler":      "zip",
-		"hash":         a.Hash(),
-		"filename":     a.String(),
-		"content_type": "application/zip",
-		"expiration":   a.ExpirationSec(),
-	})
+	l := log.WithFields(a.LogFields()).WithField("handler", "zip")
 
-	u, err := a.DownloadURL(cf)
+	u, err := a.DownloadURL()
 	if err == nil {
 		l.WithField("container", container).Info("existing secure zip url")
 		JSON(w, map[string]string{"message": "OK", "url": u}, http.StatusOK)
@@ -53,14 +51,14 @@ func ZipHandler(w http.ResponseWriter, r *http.Request, cf swift.Connection) {
 		return
 	}
 
-	_, _, err = a.Upload(cf, container)
+	_, _, err = a.Upload(container)
 	if err != nil {
 		l.WithFields(logrus.Fields{"tmp": a.TempFile, "error": err.Error()}).Warn("upload zip error")
 		internalError(w, "Unable to upload zip file to Rackspace Cloud Files")
 		return
 	}
 
-	u, err = a.DownloadURL(cf)
+	u, err = a.DownloadURL()
 	if err != nil {
 		l.WithField("error", err.Error()).Warn("generating secure zip url failed")
 		internalError(w, fmt.Sprintf("Unable to get download url for %s", a.String()))
