@@ -1,6 +1,7 @@
 package zippo
 
 import (
+	"encoding/json"
 	"fmt"
 	"gopkg.in/check.v1"
 	"io/ioutil"
@@ -38,6 +39,12 @@ func (s *HTTPSuite) TestHandler_Upload_callback(c *check.C) {
 	}
 
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		var t Response
+
+		decoder := json.NewDecoder(r.Body)
+		err := decoder.Decode(&t)
+		c.Assert(err, check.IsNil)
+
 		fmt.Fprintln(w, "Hello Callback!")
 	}))
 	defer ts.Close()
@@ -56,9 +63,9 @@ func (s *HTTPSuite) TestHandler_Upload_callback(c *check.C) {
 
 	defer resp.Body.Close()
 
-	c.Assert(resp.StatusCode, check.Equals, http.StatusOK)
+	c.Assert(resp.StatusCode, check.Equals, http.StatusAccepted)
 
 	b, err := ioutil.ReadAll(resp.Body)
 	c.Assert(err, check.IsNil)
-	c.Assert(string(b), check.Equals, `{"message":"Request is being processed."}`)
+	c.Assert(string(b), check.Equals, `{"status":202,"message":"Request is being processed."}`)
 }

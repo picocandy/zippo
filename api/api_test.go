@@ -11,10 +11,6 @@ var live = flag.Bool("live", false, "Include live tests")
 
 func Test(t *testing.T) { check.TestingT(t) }
 
-func init() {
-	//log.Out = ioutil.Discard
-}
-
 func prepareTemp(f string, prefix string) string {
 	tmp, err := ioutil.TempFile("", prefix)
 	if err != nil {

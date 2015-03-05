@@ -16,15 +16,15 @@ func (h *Handler) ZipUpload(w http.ResponseWriter, r *http.Request) {
 	dec := json.NewDecoder(r.Body)
 	err := dec.Decode(a)
 	if err != nil {
-		JSON(w, map[string]string{"error": err.Error()}, http.StatusBadRequest)
+		JSON(w, Response{Status: http.StatusBadRequest, Message: err.Error()}, http.StatusBadRequest)
 		return
 	}
 
 	a.RenameDuplicatePayloads()
 
 	if a.HasCallbackURL() {
-		go a.CallCallbackURL(map[string]string{})
-		JSON(w, map[string]string{"message": "Request is being processed."}, http.StatusOK)
+		go ProcessWithCallback(a)
+		JSON(w, Response{Status: http.StatusOK, Message: "Request is being processed."}, http.StatusOK)
 		return
 	}
 
@@ -36,5 +36,5 @@ func (h *Handler) ZipUpload(w http.ResponseWriter, r *http.Request) {
 		internalError(w, err.Error())
 	}
 
-	JSON(w, map[string]string{"message": "OK", "url": u}, http.StatusOK)
+	JSON(w, Response{Status: http.StatusOK, Message: "OK", URL: u}, http.StatusOK)
 }

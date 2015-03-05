@@ -16,13 +16,13 @@ func (h *Handler) Upload(w http.ResponseWriter, r *http.Request) {
 	dec := json.NewDecoder(r.Body)
 	err := dec.Decode(p)
 	if err != nil {
-		JSON(w, map[string]string{"error": err.Error()}, http.StatusBadRequest)
+		JSON(w, Response{Status: http.StatusBadRequest, Message: err.Error()}, http.StatusBadRequest)
 		return
 	}
 
 	if p.HasCallbackURL() {
-		go p.CallCallbackURL(map[string]string{})
-		JSON(w, map[string]string{"message": "Request is being processed."}, http.StatusOK)
+		go ProcessWithCallback(p)
+		JSON(w, Response{Status: http.StatusAccepted, Message: "Request is being processed."}, http.StatusAccepted)
 		return
 	}
 
@@ -34,5 +34,5 @@ func (h *Handler) Upload(w http.ResponseWriter, r *http.Request) {
 		internalError(w, err.Error())
 	}
 
-	JSON(w, map[string]string{"message": "OK", "url": u}, http.StatusOK)
+	JSON(w, Response{Status: http.StatusOK, Message: "OK", URL: u}, http.StatusOK)
 }
