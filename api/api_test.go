@@ -122,6 +122,27 @@ var fixtures = map[string]string{
 		]
 	}
 	`,
+	"archive-with-callback": `
+	{
+		"filename": "zippo-archive.zip",
+		"payloads": [
+			{
+				"url": "http://picocandy.com/images/logo.png",
+				"filename": "picocandy.png",
+				"content_type": "image/png",
+				"content_length": 3909
+			},
+			{
+				"url": "http://www.gorillatoolkit.org/static/images/gorilla-icon-64.png",
+				"filename": "gorilla.png",
+				"content_type": "image/png",
+				"content_length": 6722
+			}
+		],
+		"expiration": 60,
+		"callback_url": "http://example.com/"
+	}
+	`,
 	"payload": `
 	{
 		"url": "http://picocandy.com/images/logo.png",

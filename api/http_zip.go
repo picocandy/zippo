@@ -24,7 +24,7 @@ func (h *Handler) ZipUpload(w http.ResponseWriter, r *http.Request) {
 
 	if a.HasCallbackURL() {
 		go ProcessWithCallback(a)
-		JSON(w, Response{Status: http.StatusOK, Message: "Request is being processed."}, http.StatusOK)
+		JSON(w, Response{Status: http.StatusAccepted, Message: "Request is being processed."}, http.StatusAccepted)
 		return
 	}
 
