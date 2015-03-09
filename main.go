@@ -31,6 +31,7 @@ func main() {
 	h := zippo.NewHandler(cf)
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", zippo.HomeHandler)
+	mux.HandleFunc("/version", zippo.VersionHandler)
 	mux.HandleFunc("/z", h.ZipUpload)
 	mux.HandleFunc("/u", h.Upload)
 

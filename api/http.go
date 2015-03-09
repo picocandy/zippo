@@ -6,6 +6,8 @@ import (
 	"net/http"
 )
 
+const Version = "1.0.1"
+
 func LogHandler(handler http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		addr := r.Header.Get("X-Real-IP")
@@ -28,6 +30,15 @@ func HomeHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	fmt.Fprint(w, "zippo!")
+}
+
+func VersionHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != "GET" {
+		w.WriteHeader(http.StatusMethodNotAllowed)
+		return
+	}
+
+	fmt.Fprintf(w, "zippo %s", Version)
 }
 
 func postPlease(w http.ResponseWriter, r *http.Request) (bool, map[string]string) {
