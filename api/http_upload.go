@@ -32,6 +32,7 @@ func (h *Handler) Upload(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		l.WithField("error", err.Error()).Warn("failure")
 		internalError(w, err.Error())
+		return
 	}
 
 	JSON(w, Response{Status: http.StatusOK, Message: "OK", URL: u}, http.StatusOK)
