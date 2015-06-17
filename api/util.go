@@ -104,10 +104,14 @@ func PostJSON(u string, v interface{}) error {
 	req.Header.Set("Content-Type", "application/json")
 
 	c := &http.Client{}
-	_, err = c.Do(req)
+	resp, err := c.Do(req)
 	if err != nil {
 		return err
 	}
+
+	// When err is nil, resp always contains a non-nil resp.Body.
+	// We should close the resp.Body even if we don't read it
+	defer resp.Body.Close()
 
 	return nil
 }
