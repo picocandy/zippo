@@ -3,10 +3,11 @@ package zippo
 import (
 	"errors"
 	"fmt"
-	"github.com/Sirupsen/logrus"
-	"github.com/ncw/swift"
 	"net/http"
 	"os"
+
+	"github.com/Sirupsen/logrus"
+	"github.com/ncw/swift"
 )
 
 var (
@@ -35,7 +36,7 @@ type Transformer interface {
 func Process(t Transformer) (string, error) {
 	err := t.Authenticate()
 	if err != nil {
-		return "", errors.New("Unable to authenticate to Rackspace Cloud Files")
+		return "", errors.New("Unable to authenticate to OpenStack Swift Provider")
 	}
 
 	u, err := t.DownloadURL()
@@ -50,7 +51,7 @@ func Process(t Transformer) (string, error) {
 
 	_, _, err = t.Upload()
 	if err != nil {
-		return "", fmt.Errorf("Unable to upload file to Rackspace Cloud Files: %q", err.Error())
+		return "", fmt.Errorf("Unable to upload file to OpenStack Swift Provider: %q", err.Error())
 	}
 
 	u, err = t.DownloadURL()

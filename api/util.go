@@ -8,13 +8,14 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/ncw/swift"
 	"io"
 	"net/http"
 	"net/url"
 	"os"
 	"strconv"
 	"time"
+
+	"github.com/ncw/swift"
 )
 
 func GenerateTempURL(cf swift.Connection, r Parker) (string, error) {
@@ -56,7 +57,6 @@ func NewConnection() swift.Connection {
 		ApiKey:   os.Getenv("SWIFT_API_KEY"),
 		AuthUrl:  os.Getenv("SWIFT_AUTH_URL"),
 		Region:   os.Getenv("SWIFT_REGION"),
-		TenantId: os.Getenv("SWIFT_TENANT_ID"),
 		Internal: internal,
 	}
 }
